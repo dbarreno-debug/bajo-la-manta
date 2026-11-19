@@ -1,0 +1,4046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#14132b" />
+  <meta name="description" content="Juego divertido de Irene y Papá: esquiva objetos-monstruo absurdos del dormitorio bajo la manta y juega al Barco-Cama con gancho y cuerda." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%231e1b4b%27/%3E%3Crect x=%2710%27 y=%2728%27 width=%2744%27 height=%2722%27 rx=%276%27 fill=%27%230d9488%27 stroke=%27%23fde047%27 stroke-width=%273%27/%3E%3Ccircle cx=%2722%27 cy=%2720%27 r=%277%27 fill=%27%23f5c6a5%27/%3E%3Ccircle cx=%2742%27 cy=%2721%27 r=%276.5%27 fill=%27%23fbd2b4%27/%3E%3Ccircle cx=%2752%27 cy=%2713%27 r=%274%27 fill=%27%23fde047%27/%3E%3C/svg%3E" />
+  <title>¡Bajo la Manta! — Irene y Papá</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #111026;
+      --surface: #1b1a38;
+      --surface-soft: #24234a;
+      --border: rgba(255, 255, 255, 0.14);
+      --text: #f8fafc;
+      --muted: #b8bfe0;
+      --accent-amber: #fbbf24;
+      --accent-teal: #0d9488;
+      --accent-cyan: #0e7490;
+      --accent-pink: #db2777;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at top, #1f1c47 0%, var(--bg) 72%);
+      color: var(--text);
+      font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      touch-action: manipulation;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    button {
+      font-family: inherit;
+      color: inherit;
+      border: none;
+      background: none;
+    }
+
+    .app-wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 10px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Header */
+    .topbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: #fef3c7;
+    }
+
+    .brand-title span {
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .brand-sub {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .score-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-sep {
+      color: rgba(255, 255, 255, 0.28);
+    }
+
+    .game-btn {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      cursor: pointer;
+      transition: transform 0.08s ease, filter 0.12s ease, opacity 0.15s ease;
+    }
+
+    .game-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    .game-btn:active, .game-btn.pressed {
+      transform: translateY(2px) scale(0.97);
+    }
+
+    .btn-pill {
+      padding: 6px 11px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Stage */
+    .stage-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 9px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .canvas-frame {
+      position: relative;
+      border-radius: 13px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: #1b1a36;
+    }
+
+    #gameCanvas {
+      touch-action: none;
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 960 / 560;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Menu Overlay */
+    .menu-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: linear-gradient(180deg, rgba(20, 19, 42, 0.88) 0%, rgba(23, 22, 50, 0.78) 50%, rgba(20, 19, 42, 0.93) 100%);
+      overflow-y: auto;
+      gap: 10px;
+    }
+
+    .menu-hero {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .edition-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 12px;
+      border-radius: 999px;
+      background: rgba(251, 191, 36, 0.18);
+      border: 1px solid rgba(252, 211, 77, 0.45);
+      color: #fde68a;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #fef3c7;
+      text-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+      line-height: 1.08;
+    }
+
+    .hero-desc {
+      margin: 0;
+      max-width: 600px;
+      font-size: 13px;
+      color: #e0e7ff;
+    }
+
+    .hero-desc strong {
+      color: #a5f3fc;
+    }
+
+    .menu-body {
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .menu-panel {
+      background: rgba(31, 32, 66, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 13px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #c7d2fe;
+    }
+
+    .mode-hint {
+      font-weight: 600;
+      color: #fde68a;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .mode-btn {
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-align: left;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .mode-btn.is-active {
+      border-color: #fcd34d;
+      background: rgba(251, 191, 36, 0.22);
+    }
+
+    .mode-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fef3c7;
+    }
+
+    .mode-btn[data-mode="1p-irene"] .mode-title { color: #fbcfe8; }
+    .mode-btn[data-mode="1p-papa"] .mode-title { color: #a5f3fc; }
+
+    .mode-sub {
+      font-size: 11.5px;
+      color: #cbd5e1;
+    }
+
+    .menu-bottom-row {
+      display: grid;
+      grid-template-columns: 5fr 7fr;
+      gap: 9px;
+      align-items: stretch;
+    }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .diff-btn {
+      padding: 7px 4px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+    }
+
+    .diff-btn.is-active {
+      border: 2px solid #6ee7b7;
+      background: rgba(52, 211, 153, 0.25);
+      color: #d1fae5;
+    }
+
+    .start-col {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      justify-content: space-between;
+    }
+
+    .btn-start-full {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #fbbf24 0%, #fb923c 55%, #fb7185 100%);
+      color: #26140c;
+      box-shadow: 0 6px 18px rgba(251, 146, 60, 0.35);
+    }
+
+    .start-sub-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .btn-start-p1 {
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(99, 102, 241, 0.88);
+      border: 1px solid rgba(165, 180, 252, 0.45);
+      color: #ffffff;
+    }
+
+    .btn-start-p2 {
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(8, 145, 178, 0.92);
+      border: 1px solid rgba(103, 232, 249, 0.45);
+      color: #ffffff;
+    }
+
+    .menu-footer-keys {
+      text-align: center;
+      font-size: 11.5px;
+      color: #c7d2fe;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px 16px;
+    }
+
+    /* Result Overlay */
+    .result-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(18, 18, 38, 0.82);
+    }
+
+    .result-card {
+      background: #202145;
+      border: 2px solid rgba(252, 211, 77, 0.65);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .result-emoji { font-size: 40px; line-height: 1; }
+    .result-title { margin: 0; font-size: 22px; font-weight: 900; color: #fde68a; }
+    .result-msg { margin: 0; font-size: 13.5px; color: #e0e7ff; line-height: 1.45; }
+    .result-stats {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      font-size: 12.5px;
+      font-weight: 800;
+      background: rgba(0, 0, 0, 0.28);
+      border-radius: 12px;
+      padding: 8px 12px;
+    }
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 4px;
+    }
+    .btn-result-primary {
+      padding: 9px 16px;
+      border-radius: 11px;
+      font-size: 13.5px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #fbbf24, #fb923c);
+      color: #26140c;
+    }
+    .btn-result-secondary {
+      padding: 9px 14px;
+      border-radius: 11px;
+      font-size: 12.5px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+
+    /* Tactile Controls Bar */
+    .control-deck {
+      background: rgba(12, 11, 28, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 10px;
+    }
+
+    .controls-tip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 6px 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .p1-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .btn-blanket-shared {
+      flex: 1;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #0d9488, #14b8a6);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+    }
+
+    .btn-blanket-papa {
+      flex: 1;
+      padding: 14px 12px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 900;
+      background: #0e7490;
+      color: #ffffff;
+    }
+
+    .btn-blanket-irene {
+      flex: 1;
+      padding: 14px 12px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 900;
+      background: #db2777;
+      color: #ffffff;
+    }
+
+    .btn-key-hint {
+      font-size: 11.5px;
+      font-weight: 600;
+      opacity: 0.88;
+    }
+
+    .btn-skip-barco {
+      padding: 14px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .p2-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      align-items: center;
+    }
+
+    .p2-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px;
+      transition: opacity 0.18s ease;
+    }
+
+    .p2-group.is-ai {
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    .p2-tag {
+      font-size: 11.5px;
+      font-weight: 900;
+      color: var(--muted);
+      padding: 0 5px;
+      white-space: nowrap;
+    }
+
+    .btn-dir {
+      padding: 10px 10px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 800;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-dir-flex { flex: 1; }
+
+    .btn-hook {
+      flex: 2;
+      padding: 10px 10px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 900;
+      background: #0e7490;
+      color: #ffffff;
+    }
+
+    .btn-turbo {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 900;
+      background: #db2777;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .p2-touch-hint {
+      grid-column: 1 / -1;
+      margin: 0;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    /* Bestiary Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.72);
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55);
+    }
+
+    .modal-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-header h2 { margin: 0; font-size: 16px; font-weight: 900; }
+    .modal-header p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+    .bestiary-grid {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .bestiary-card {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px;
+      border-radius: 13px;
+      background: rgba(12, 11, 28, 0.58);
+      border: 1px solid var(--border);
+    }
+
+    .bestiary-canvas {
+      display: block;
+      width: 92px;
+      height: 76px;
+      flex-shrink: 0;
+      border-radius: 9px;
+      background: #1e1b4b;
+      border: 1px solid var(--border);
+    }
+
+    .bestiary-info {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .bestiary-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .bestiary-name { font-weight: 800; font-size: 13.5px; color: #fef3c7; }
+    .bestiary-verb {
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: 900;
+      background: rgba(244, 63, 94, 0.22);
+      color: #fda4af;
+    }
+    .bestiary-latin { font-size: 11.5px; font-style: italic; color: var(--muted); }
+    .bestiary-real { font-size: 12px; color: var(--text); }
+    .bestiary-quote { font-size: 11.5px; color: var(--muted); }
+
+    /* Responsive adjustments for smaller tablets & phones */
+    @media (max-width: 720px) {
+      .mode-grid { grid-template-columns: 1fr; }
+      .menu-bottom-row { grid-template-columns: 1fr; }
+      .p2-grid { grid-template-columns: 1fr; }
+      .bestiary-grid { grid-template-columns: 1fr; }
+      .p2-tag { display: none; }
+      .score-pill { display: none; }
+      .menu-overlay { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrap">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🛏️</span>
+        <div>
+          <h1 class="brand-title">¡Bajo la Manta! <span>· Irene y Papá</span></h1>
+          <p id="statusSubtitle" class="brand-sub">Bestias del dormitorio y el Barco-Cama rescatador</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div id="scorePill" class="score-pill">
+          <span title="Rescates de Papá">⚓ <span id="statPapa">0</span></span>
+          <span class="score-sep">|</span>
+          <span title="Escapadas de Irene">🧜‍♀️ <span id="statIrene">0</span></span>
+          <span class="score-sep">|</span>
+          <span title="Récord de puntos">⭐ <span id="statBest">0</span></span>
+        </div>
+
+        <button id="btnBestiary" type="button" class="game-btn btn-pill">📖 Bestiario</button>
+        <button id="btnSound" type="button" class="game-btn btn-pill" title="Activar o silenciar sonido">🔊 Sonido</button>
+        <button id="btnFullscreen" type="button" class="game-btn btn-pill" title="Pantalla completa para tablet">⛶ Pantalla</button>
+        <button id="btnMenu" type="button" class="hidden game-btn btn-pill">🏠 Menú</button>
+      </div>
+    </header>
+
+    <!-- Main Game Stage -->
+    <main class="stage-card">
+      <div class="canvas-frame">
+        <canvas id="gameCanvas" width="960" height="560"></canvas>
+
+        <!-- Menu Overlay -->
+        <div id="menuOverlay" class="menu-overlay">
+          <div class="menu-hero">
+            <div class="edition-tag">🌙 EDICIÓN DORMITORIO DE IRENE (8 AÑOS)</div>
+            <h2 class="hero-title">¡BAJO LA MANTA!</h2>
+            <p class="hero-desc">
+              ¡Zapatillas mordedoras, pinzas pellizconas y almohadas aplastantes invaden el cuarto! Escóndete bajo la manta y luego sobrevive al <strong>Barco-Cama y el Gancho</strong> de Papá.
+            </p>
+          </div>
+
+          <div class="menu-body">
+            <!-- Player Mode Selector -->
+            <div class="menu-panel">
+              <div class="panel-header">
+                <span>1. ¿QUIÉN JUEGA?</span>
+                <span id="modeHint" class="mode-hint">¡Los dos juntos en el mismo teclado o tablet!</span>
+              </div>
+              <div class="mode-grid">
+                <button data-mode="2p" class="mode-btn game-btn is-active">
+                  <div class="mode-title">👥 Papá + Irene</div>
+                  <div class="mode-sub">2 jugadores a la vez</div>
+                </button>
+                <button data-mode="1p-irene" class="mode-btn game-btn">
+                  <div class="mode-title">👧 Solo Irene</div>
+                  <div class="mode-sub">Esquiva a Papá IA</div>
+                </button>
+                <button data-mode="1p-papa" class="mode-btn game-btn">
+                  <div class="mode-title">🧔 Solo Papá</div>
+                  <div class="mode-sub">Atrapa a Irene IA</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Difficulty + Start Buttons -->
+            <div class="menu-bottom-row">
+              <div class="menu-panel">
+                <div class="panel-header"><span>2. NIVEL DE LOCURA</span></div>
+                <div class="diff-grid">
+                  <button data-diff="easy" class="diff-btn game-btn">😊 Suave</button>
+                  <button data-diff="normal" class="diff-btn game-btn is-active">😜 Divertido</button>
+                  <button data-diff="crazy" class="diff-btn game-btn">🤪 ¡Locura!</button>
+                </div>
+              </div>
+
+              <div class="start-col">
+                <button id="btnStartFull" type="button" class="game-btn btn-start-full">
+                  🚀 ¡EMPEZAR AVENTURA COMPLETA!
+                </button>
+                <div class="start-sub-row">
+                  <button id="btnStartP1" type="button" class="game-btn btn-start-p1">
+                    🛏️ Solo Fase 1: La Manta
+                  </button>
+                  <button id="btnStartP2" type="button" class="game-btn btn-start-p2">
+                    ⚓ Solo Fase 2: Barco-Gancho
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-footer-keys">
+            <span>⌨️ <strong>Papá:</strong> A/D mover · S/W manta o gancho</span>
+            <span>⌨️ <strong>Irene:</strong> Flechas mover/manta · Shift/Enter turbo</span>
+            <span>📱 <strong>Tablet/Ratón:</strong> Botones abajo o tocar pantalla</span>
+          </div>
+        </div>
+
+        <!-- Round / Result Overlay -->
+        <div id="resultOverlay" class="hidden result-overlay">
+          <div class="result-card">
+            <div id="resultEmoji" class="result-emoji">🏆</div>
+            <h3 id="resultTitle" class="result-title">¡GENIAL!</h3>
+            <p id="resultMsg" class="result-msg"></p>
+            <div id="resultStats" class="result-stats"></div>
+            <div id="resultActions" class="result-actions"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Context-sensitive Tactile Controls Bar -->
+      <section id="controlDeck" class="control-deck">
+        <!-- Menu Quick Tip -->
+        <div id="controlsMenu" class="controls-tip">
+          <span>💡 <strong>Truco Fase 1:</strong> Métete bajo la manta <em>justo</em> antes del ataque para hacer <strong>¡Esquiva Perfecta!</strong> (pero ojo, ¡no te quedes sin aire!).</span>
+          <span>⚓ <strong>Truco Fase 2:</strong> Irene tiene un <strong>Turbo-Burbuja</strong> para esquivar el gancho en el último segundo.</span>
+        </div>
+
+        <!-- Phase 1 Controls -->
+        <div id="controlsP1" class="hidden">
+          <div id="controlsP1Shared" class="hidden p1-row">
+            <button id="btnBlanketShared" type="button" class="game-btn btn-blanket-shared">
+              🛡️ ¡MANTÉN PULSADO PARA METERTE BAJO LA MANTA! (Espacio / ↓)
+            </button>
+            <button id="btnSkipToP2" type="button" class="game-btn btn-skip-barco">⚓ Ir al Barco</button>
+          </div>
+          <div id="controlsP1Split" class="hidden p1-row">
+            <button id="btnBlanketPapa" type="button" class="game-btn btn-blanket-papa">
+              🧔🛡️ MANTA DE PAPÁ <span class="btn-key-hint">(Mantén S / W)</span>
+            </button>
+            <button id="btnBlanketIrene" type="button" class="game-btn btn-blanket-irene">
+              👧🛡️ MANTA DE IRENE <span class="btn-key-hint">(Mantén ↓ / ↑)</span>
+            </button>
+            <button id="btnSkipToP2Split" type="button" class="game-btn btn-skip-barco" title="Ir directo al Barco-Cama">⚓ Barco</button>
+          </div>
+        </div>
+
+        <!-- Phase 2 Controls -->
+        <div id="controlsP2" class="hidden p2-grid">
+          <div id="p2DadControls" class="p2-group">
+            <span class="p2-tag">🧔 PAPÁ</span>
+            <button id="btnBoatLeft" type="button" class="game-btn btn-dir btn-dir-flex">◀️ A</button>
+            <button id="btnBoatHook" type="button" class="game-btn btn-hook">⚓ ¡GANCHO! (S/Esp)</button>
+            <button id="btnBoatRight" type="button" class="game-btn btn-dir btn-dir-flex">D ▶️</button>
+          </div>
+
+          <div id="p2IreneControls" class="p2-group">
+            <span class="p2-tag">👧 IRENE</span>
+            <button id="btnSwimLeft" type="button" class="game-btn btn-dir">◀️</button>
+            <button id="btnSwimUp" type="button" class="game-btn btn-dir">🔼</button>
+            <button id="btnSwimDown" type="button" class="game-btn btn-dir">🔽</button>
+            <button id="btnSwimRight" type="button" class="game-btn btn-dir">▶️</button>
+            <button id="btnIreneDash" type="button" class="game-btn btn-turbo">🫧 TURBO (Shift)</button>
+          </div>
+          <p class="p2-touch-hint">
+            👆 <strong>En tablet o ratón:</strong> toca/arrastra en la <strong>zona del barco</strong> para mover a Papá (toca para lanzar) y en el <strong>agua</strong> para dirigir a Irene ¡incluso a la vez!
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Bestiary Modal -->
+  <div id="bestiaryModal" class="hidden modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>📖 Bestiario Oficial del Dormitorio</h2>
+          <p>Objetos cotidianos con muy malas intenciones (y muy poca vergüenza)</p>
+        </div>
+        <button id="btnCloseBestiary" type="button" class="game-btn btn-pill">✕ Cerrar</button>
+      </div>
+      <div id="bestiaryGrid" class="bestiary-grid"></div>
+    </div>
+  </div>
+
+  <script>
+(() => {
+      'use strict';
+
+      // ============================================================
+      // 1. CONSTANTS, BESTIARY DATA & PERSISTENT FAMILY STATS
+      // ============================================================
+      const W = 960;
+      const H = 560;
+      const STORAGE_KEY = 'bajo_la_manta_irene_v1';
+
+      const BEASTS = [
+        {
+          id: 'slipper',
+          name: 'Cocodrilo-Zapatilla',
+          latin: 'Zapatillus Mordedoris',
+          realObj: 'Zapatilla de andar por casa con la suela despegada',
+          verb: '¡MORDER!',
+          color: '#3b82f6',
+          enterLines: ['¡Ñam ñam dedos!', '¡Huelo pies calentitos!', '¡A morder calcetines!'],
+          attackLines: ['¡MORDISCO!', '¡ÑAM-ÑAM!'],
+          blockLines: ['¡Oye! ¿Dónde están?!', '¡Malditas mantas!', '¡He mordido algodón!'],
+          hitLines: ['¡ÑAM! ¡Qué rico pie!', '¡Bocado de zapatilla!'],
+          sound: 'chomp',
+          fxWord: '¡ÑAM!'
+        },
+        {
+          id: 'clothespin',
+          name: 'Tiburón-Pinza',
+          latin: 'Pinzus Pellizconis',
+          realObj: 'Pinza de madera con una aleta de cartón pegada',
+          verb: '¡PELLIZCAR!',
+          color: '#f59e0b',
+          enterLines: ['¡Un pellizquito en la nariz!', '¡Clac-clac, tiburón!', '¡Cuidado orejas!'],
+          attackLines: ['¡PELLIZCÓN!', '¡CLAC-CLAC!'],
+          blockLines: ['¡Mmph, sabe a suavizante!', '¡Me pillé el muelle!', '¡Trampa de tela!'],
+          hitLines: ['¡CLAC! ¡Pellizco en la nariz!', '¡Ji-ji, pellizcón!'],
+          sound: 'pinch',
+          fxWord: '¡PELLIZCÓN!'
+        },
+        {
+          id: 'scissors',
+          name: 'Cangrejo-Tijeras',
+          latin: 'Tijerus Peluquerus',
+          realObj: 'Tijeras escolares de punta redonda con ojos de plástico',
+          verb: '¡CORTAR!',
+          color: '#ef4444',
+          enterLines: ['¡Corte de flequillo gratis!', '¡Chas-chas de cangrejo!', '¡Peluquería loca!'],
+          attackLines: ['¡TIJERETAZO!', '¡ZAS-CHAS!'],
+          blockLines: ['¡Prohibido cortar sábanas!', '¡Se enfada mamá si corto!', '¡Aire cortado!'],
+          hitLines: ['¡CHAS! ¡Peinado en zig-zag!', '¡Corte exprés!'],
+          sound: 'snip',
+          fxWord: '¡CHAS-ZAS!'
+        },
+        {
+          id: 'pillow',
+          name: 'Elefante-Almohada',
+          latin: 'Almohadonte Aplastus',
+          realObj: 'Almohada gigantesca con las esquinas atadas como orejas',
+          verb: '¡APLASTAR!',
+          color: '#8b5cf6',
+          enterLines: ['¡BOMBA DE PLUMAS!', '¡Aplastamiento mullido!', '¡Siesta forzosa!'],
+          attackLines: ['¡PLAF GIGANTE!', '¡APLASTÓN!'],
+          blockLines: ['¡Demasiado rebote!', '¡Boooiiing!', '¡Manta trampolín!'],
+          hitLines: ['¡CHOF! ¡Tortilla de pijama!', '¡Aplastados en plumas!'],
+          sound: 'thud',
+          fxWord: '¡PLAF!'
+        },
+        {
+          id: 'sock',
+          name: 'Serpiente-Calcetín',
+          latin: 'Calcetinus Cosquillosus',
+          realObj: 'Calcetín largo a rayas que se perdió en la lavadora',
+          verb: '¡COSQUILLAS!',
+          color: '#10b981',
+          enterLines: ['¡Sssss-huele a queso!', '¡Cosquillas en los pies!', '¿Has visto a mi pareja?'],
+          attackLines: ['¡COSQUILLAZO!', '¡SSSS-ENVUELTO!'],
+          blockLines: ['¡Oye, no se vale esconderse!', '¡Me hice un nudo!', '¡Sigo sin pareja!'],
+          hitLines: ['¡JIJIJI! ¡Ataque cosquillón!', '¡Envueltos en calcetín!'],
+          sound: 'tickle',
+          fxWord: '¡COSQUILLAS!'
+        },
+        {
+          id: 'stapler',
+          name: 'T-Rex-Grapadora',
+          latin: 'Grapasaurio Rex',
+          realObj: 'Grapadora roja de escritorio con dientes de grapas',
+          verb: '¡GRAPAR!',
+          color: '#dc2626',
+          enterLines: ['¡GRRR-GRAPA!', '¡Te grapo el pijama!', '¡Tiembla, folio humano!'],
+          attackLines: ['¡GRAPAZO REX!', '¡CLACK!'],
+          blockLines: ['¡Me quedé sin grapas!', '¡Atasco de papel!', '¡Manta blindada!'],
+          hitLines: ['¡CLACK! ¡Pijama grapado!', '¡Doble grapa!'],
+          sound: 'staple',
+          fxWord: '¡CLACK!'
+        }
+      ];
+
+      const DIFF_CONFIG = {
+        easy:   { label: 'Suave',     hearts: 5, beastSpeed: 0.80, telegraph: 1.30, spawnGap: 2.35, phase1Count: 7,  p2Time: 32, hookSpeed: 540, aiSkill: 0.55 },
+        normal: { label: 'Divertido', hearts: 4, beastSpeed: 1.00, telegraph: 1.02, spawnGap: 1.85, phase1Count: 9,  p2Time: 30, hookSpeed: 620, aiSkill: 0.78 },
+        crazy:  { label: '¡Locura!',  hearts: 3, beastSpeed: 1.24, telegraph: 0.78, spawnGap: 1.38, phase1Count: 12, p2Time: 28, hookSpeed: 710, aiSkill: 0.94 }
+      };
+
+      function loadStats() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            return {
+              papaWins: parsed.papaWins || 0,
+              ireneWins: parsed.ireneWins || 0,
+              bestScore: parsed.bestScore || 0,
+              bounced: Object.assign({}, parsed.bounced || {})
+            };
+          }
+        } catch (_) {}
+        return { papaWins: 0, ireneWins: 0, bestScore: 0, bounced: {} };
+      }
+
+      const stats = loadStats();
+      function saveStats() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+        } catch (_) {}
+        updateHeaderStats();
+      }
+
+      // ============================================================
+      // 2. PROCEDURAL WEB AUDIO ENGINE (100% SELF-CONTAINED)
+      // ============================================================
+      const AudioFX = (() => {
+        let ctx = null;
+        let muted = false;
+
+        function ensure() {
+          if (muted) return null;
+          if (!ctx) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (AC) ctx = new AC();
+          }
+          if (ctx && ctx.state === 'suspended') {
+            ctx.resume().catch(() => {});
+          }
+          return ctx;
+        }
+
+        function tone(type, f1, f2, dur, vol = 0.14, delay = 0) {
+          const ac = ensure();
+          if (!ac) return;
+          const t0 = ac.currentTime + delay;
+          const osc = ac.createOscillator();
+          const g = ac.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(f1, t0);
+          if (f2 !== f1) osc.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t0 + dur);
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.linearRampToValueAtTime(vol, t0 + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          osc.connect(g);
+          g.connect(ac.destination);
+          osc.start(t0);
+          osc.stop(t0 + dur + 0.02);
+        }
+
+        function noise(dur, filterFreq, vol = 0.10, delay = 0) {
+          const ac = ensure();
+          if (!ac) return;
+          const t0 = ac.currentTime + delay;
+          const bufLen = Math.max(1, Math.floor(ac.sampleRate * dur));
+          const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+          const src = ac.createBufferSource();
+          src.buffer = buf;
+          const flt = ac.createBiquadFilter();
+          flt.type = 'bandpass';
+          flt.frequency.setValueAtTime(filterFreq, t0);
+          flt.Q.setValueAtTime(1.5, t0);
+          const g = ac.createGain();
+          g.gain.setValueAtTime(vol, t0);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          src.connect(flt);
+          flt.connect(g);
+          g.connect(ac.destination);
+          src.start(t0);
+          src.stop(t0 + dur + 0.02);
+        }
+
+        return {
+          get muted() { return muted; },
+          toggle() { muted = !muted; return muted; },
+          unlock() { ensure(); },
+          blanketDown() {
+            noise(0.16, 650, 0.12);
+            tone('sine', 340, 210, 0.14, 0.09);
+          },
+          blanketUp() {
+            noise(0.12, 1100, 0.09);
+            tone('sine', 240, 420, 0.12, 0.08);
+          },
+          overheat() {
+            tone('triangle', 460, 240, 0.2, 0.13);
+            noise(0.22, 1400, 0.08, 0.05);
+          },
+          warn() {
+            tone('triangle', 520, 740, 0.09, 0.09);
+            tone('triangle', 680, 920, 0.09, 0.09, 0.10);
+          },
+          chomp() {
+            tone('sawtooth', 260, 75, 0.14, 0.14);
+            tone('square', 140, 60, 0.09, 0.10, 0.04);
+          },
+          pinch() {
+            tone('square', 920, 420, 0.07, 0.10);
+            tone('square', 1050, 380, 0.07, 0.10, 0.08);
+          },
+          snip() {
+            noise(0.08, 3200, 0.14);
+            tone('triangle', 1200, 650, 0.07, 0.09);
+            noise(0.08, 3600, 0.12, 0.09);
+          },
+          thud() {
+            tone('sine', 160, 42, 0.26, 0.22);
+            noise(0.18, 280, 0.12);
+          },
+          tickle() {
+            for (let i = 0; i < 4; i++) {
+              tone('sine', 520 + (i % 2) * 260, 700 + i * 80, 0.06, 0.09, i * 0.055);
+            }
+          },
+          staple() {
+            tone('square', 380, 90, 0.08, 0.14);
+            noise(0.06, 2600, 0.14, 0.02);
+          },
+          boing() {
+            tone('sine', 220, 680, 0.24, 0.14);
+            tone('triangle', 320, 560, 0.18, 0.09, 0.06);
+          },
+          perfect() {
+            tone('triangle', 523, 523, 0.11, 0.13, 0);
+            tone('triangle', 659, 659, 0.11, 0.13, 0.08);
+            tone('triangle', 784, 1046, 0.18, 0.14, 0.16);
+          },
+          hurt() {
+            tone('sawtooth', 330, 150, 0.22, 0.13);
+            tone('triangle', 260, 120, 0.24, 0.11, 0.08);
+          },
+          star() {
+            tone('sine', 740, 1180, 0.12, 0.10);
+          },
+          hookLaunch() {
+            tone('triangle', 520, 190, 0.22, 0.11);
+            noise(0.14, 1800, 0.08);
+          },
+          splash() {
+            noise(0.24, 900, 0.15);
+            tone('sine', 280, 560, 0.12, 0.08);
+          },
+          bubbleDash() {
+            tone('sine', 380, 760, 0.09, 0.10, 0);
+            tone('sine', 520, 980, 0.10, 0.10, 0.06);
+            noise(0.14, 1600, 0.08, 0.04);
+          },
+          junkCatch() {
+            tone('sawtooth', 220, 140, 0.18, 0.11);
+            tone('triangle', 170, 110, 0.20, 0.10, 0.12);
+          },
+          ireneCaught() {
+            tone('triangle', 440, 660, 0.10, 0.13, 0);
+            tone('triangle', 660, 880, 0.12, 0.13, 0.09);
+            tone('sine', 880, 1175, 0.22, 0.14, 0.18);
+          },
+          fanfare() {
+            const notes = [523, 659, 784, 1046];
+            notes.forEach((n, i) => tone('triangle', n, n * 1.01, 0.20, 0.13, i * 0.10));
+          },
+          bell() {
+            tone('sine', 880, 880, 0.45, 0.14, 0);
+            tone('sine', 1320, 1320, 0.35, 0.09, 0.02);
+            tone('sine', 880, 880, 0.45, 0.13, 0.24);
+          }
+        };
+      })();
+
+      // ============================================================
+      // 3. DOM REFERENCES & GLOBAL STATE
+      // ============================================================
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const menuOverlay = document.getElementById('menuOverlay');
+      const resultOverlay = document.getElementById('resultOverlay');
+      const resultEmoji = document.getElementById('resultEmoji');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultMsg = document.getElementById('resultMsg');
+      const resultStats = document.getElementById('resultStats');
+      const resultActions = document.getElementById('resultActions');
+
+      const statusSubtitle = document.getElementById('statusSubtitle');
+      const btnMenu = document.getElementById('btnMenu');
+      const btnSound = document.getElementById('btnSound');
+      const btnBestiary = document.getElementById('btnBestiary');
+      const bestiaryModal = document.getElementById('bestiaryModal');
+      const bestiaryGrid = document.getElementById('bestiaryGrid');
+
+      const controlsMenu = document.getElementById('controlsMenu');
+      const controlsP1 = document.getElementById('controlsP1');
+      const controlsP1Shared = document.getElementById('controlsP1Shared');
+      const controlsP1Split = document.getElementById('controlsP1Split');
+      const controlsP2 = document.getElementById('controlsP2');
+      const p2DadControls = document.getElementById('p2DadControls');
+      const p2IreneControls = document.getElementById('p2IreneControls');
+
+      function updateHeaderStats() {
+        document.getElementById('statPapa').textContent = stats.papaWins;
+        document.getElementById('statIrene').textContent = stats.ireneWins;
+        document.getElementById('statBest').textContent = stats.bestScore;
+      }
+      updateHeaderStats();
+
+      // High-DPI canvas setup
+      let dpr = Math.min(window.devicePixelRatio || 1, 2);
+      function resizeCanvas() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // Theme change listener (required for live theme switching without resetting state)
+      let isLightTheme = false;
+      function syncTheme() {
+        isLightTheme = document.documentElement.classList.contains('light');
+      }
+      syncTheme();
+      window.addEventListener('themechange', syncTheme);
+
+      // ============================================================
+      // 4. GAME STATE & INPUT SYSTEM (KEYBOARD + MOUSE + MULTITOUCH)
+      // ============================================================
+      const state = {
+        screen: 'menu', // 'menu' | 'phase1' | 'transition' | 'phase2' | 'result'
+        mode: '2p',     // '2p' | '1p-irene' | '1p-papa'
+        diff: 'normal', // 'easy' | 'normal' | 'crazy'
+        flow: 'full',   // 'full' | 'p1only' | 'p2only'
+        night: 1,
+        score: 0,
+        time: 0,
+        shake: 0,
+        particles: [],
+        popTexts: [],
+        bubbles: [], // speech bubbles
+
+        // Phase 1 state
+        p1: null,
+        // Transition state
+        trans: { t: 0, dur: 3.1 },
+        // Phase 2 state
+        p2: null,
+        // Menu preview animations
+        menuBeasts: []
+      };
+
+      const keys = Object.create(null);
+      const btnHeld = {
+        blanketShared: false,
+        blanketPapa: false,
+        blanketIrene: false,
+        boatLeft: false,
+        boatRight: false,
+        swimLeft: false,
+        swimRight: false,
+        swimUp: false,
+        swimDown: false
+      };
+
+      // Multitouch tracking directly on canvas for Phase 2 (and Phase 1 touch)
+      const activePointers = new Map(); // pointerId -> { role: 'papa'|'irene'|'shared', x, y }
+
+      function canvasCoords(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: (clientX - rect.left) * (W / rect.width),
+          y: (clientY - rect.top) * (H / rect.height)
+        };
+      }
+
+      function addPopText(x, y, text, color = '#fde047', size = 24) {
+        state.popTexts.push({ x, y, text, color, size, life: 1.05, maxLife: 1.05, vy: -48 });
+      }
+
+      function addSpeech(x, y, text, tint = '#ffffff', dur = 1.9) {
+        // Keep max 4 speech bubbles so it's readable
+        if (state.bubbles.length >= 4) state.bubbles.shift();
+        state.bubbles.push({ x, y, text, tint, life: dur, maxLife: dur });
+      }
+
+      function burstParticles(x, y, count, color, style = 'star', speed = 150) {
+        for (let i = 0; i < count; i++) {
+          const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+          const spd = speed * (0.45 + Math.random() * 0.75);
+          state.particles.push({
+            x, y,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd - (style === 'feather' ? 40 : 20),
+            size: style === 'feather' ? 7 + Math.random() * 6 : 4 + Math.random() * 5,
+            color,
+            style, // 'star' | 'feather' | 'bubble' | 'confetti' | 'puff'
+            rot: Math.random() * Math.PI * 2,
+            vrot: (Math.random() - 0.5) * 8,
+            life: 0.7 + Math.random() * 0.55,
+            maxLife: 1.25
+          });
+        }
+      }
+
+      // ============================================================
+      // 5. PHASE 1 INITIALIZATION & LOGIC ("¡BAJO LA MANTA!")
+      // ============================================================
+      function initPhase1() {
+        const cfg = DIFF_CONFIG[state.diff];
+        const isSplit = state.mode === '2p';
+        const totalToBeat = cfg.phase1Count + (state.night - 1) * 2;
+
+        state.p1 = {
+          isSplit,
+          hearts: cfg.hearts,
+          maxHearts: cfg.hearts,
+          beastsLeft: totalToBeat,
+          beastsTotal: totalToBeat,
+          beastsSpawned: 0,
+          beastsCleared: 0,
+          perfectCount: 0,
+          spawnTimer: 1.15,
+          starTimer: 2.2,
+          invuln: 0,
+          // Blanket slots: if shared, slot[0] covers whole bed; if split, [0]=Papá(left), [1]=Irene(right)
+          slots: isSplit
+            ? [
+                { id: 'papa',  name: 'Papá',  x: 370, hiding: false, hideTime: 0, air: 100, overheat: 0, coverAnim: 0 },
+                { id: 'irene', name: 'Irene', x: 590, hiding: false, hideTime: 0, air: 100, overheat: 0, coverAnim: 0 }
+              ]
+            : [
+                { id: 'both',  name: 'Irene y Papá', x: 480, hiding: false, hideTime: 0, air: 100, overheat: 0, coverAnim: 0 }
+              ],
+          beasts: [],
+          stars: [],
+          banner: { text: `🌙 NOCHE ${state.night}: ¡CUIDADO CON LAS BESTIAS!`, t: 2.3 }
+        };
+        state.p2 = null;
+        state.bubbles = [];
+        state.popTexts = [];
+        state.particles = [];
+        state.screen = 'phase1';
+        updateUIScreen();
+      }
+
+      function spawnBeast() {
+        const p1 = state.p1;
+        const cfg = DIFF_CONFIG[state.diff];
+        const nightBoost = 1 + (state.night - 1) * 0.08;
+
+        // Pick variety so all 6 objects appear quickly
+        const poolIdx = p1.beastsSpawned < BEASTS.length
+          ? p1.beastsSpawned
+          : Math.floor(Math.random() * BEASTS.length);
+        // Shuffle first appearance slightly after the very first slipper
+        const def = p1.beastsSpawned === 0
+          ? BEASTS[0]
+          : BEASTS[p1.beastsSpawned < BEASTS.length ? p1.beastsSpawned : poolIdx];
+
+        const fromLeft = Math.random() < 0.5;
+        let targetSlot = 0; // 0 = left/shared, 1 = right, 2 = both (in split mode)
+        if (p1.isSplit) {
+          const r = Math.random();
+          targetSlot = r < 0.38 ? 0 : (r < 0.76 ? 1 : 2);
+        }
+
+        const targetX = !p1.isSplit
+          ? (420 + Math.random() * 120)
+          : (targetSlot === 0 ? 370 : (targetSlot === 1 ? 590 : 480));
+        const targetY = 355;
+
+        let startX = fromLeft ? -70 : W + 70;
+        let startY = def.id === 'clothespin' ? 130 : (def.id === 'pillow' ? 95 : 445);
+        if (def.id === 'pillow') {
+          startX = targetX;
+          startY = -70;
+        }
+
+        const approachX = def.id === 'pillow'
+          ? targetX
+          : (def.id === 'clothespin'
+              ? targetX + (fromLeft ? -95 : 95)
+              : (fromLeft ? Math.max(150, targetX - 185) : Math.min(810, targetX + 185)));
+        const approachY = def.id === 'pillow'
+          ? 125
+          : (def.id === 'clothespin' ? 195 : 425);
+
+        const beast = {
+          def,
+          id: Math.random(),
+          state: 'approach', // 'approach' | 'telegraph' | 'strike' | 'bounced' | 'exit'
+          x: startX,
+          y: startY,
+          vx: 0,
+          vy: 0,
+          rot: 0,
+          vrot: 0,
+          facing: fromLeft ? 1 : -1,
+          targetSlot,
+          targetX,
+          targetY,
+          approachX,
+          approachY,
+          timer: 0,
+          telegraphDur: Math.max(0.62, cfg.telegraph / nightBoost),
+          speed: cfg.beastSpeed * nightBoost,
+          anim: Math.random() * 10,
+          struck: false
+        };
+
+        p1.beasts.push(beast);
+        p1.beastsSpawned++;
+        const enterLine = def.enterLines[Math.floor(Math.random() * def.enterLines.length)];
+        addSpeech(
+          Math.max(150, Math.min(W - 150, approachX)),
+          Math.max(95, approachY - 68),
+          enterLine,
+          '#fffbeb',
+          1.7
+        );
+      }
+
+      function spawnBedroomStar() {
+        const p1 = state.p1;
+        if (p1.stars.length >= 3) return;
+        p1.stars.push({
+          x: 280 + Math.random() * 400,
+          y: 230 + Math.random() * 75,
+          life: 4.5,
+          bob: Math.random() * Math.PI * 2,
+          r: 18
+        });
+      }
+
+      function collectStarAt(lx, ly) {
+        if (state.screen !== 'phase1' || !state.p1) return false;
+        const p1 = state.p1;
+        for (let i = p1.stars.length - 1; i >= 0; i--) {
+          const s = p1.stars[i];
+          const dx = lx - s.x;
+          const dy = ly - (s.y + Math.sin(state.time * 4 + s.bob) * 6);
+          if (dx * dx + dy * dy <= 38 * 38) {
+            p1.stars.splice(i, 1);
+            state.score += 35;
+            AudioFX.star();
+            burstParticles(s.x, s.y, 8, '#fde047', 'star', 110);
+            addPopText(s.x, s.y - 10, '+35 ⭐', '#fde047', 20);
+            // Restore a bit of air too!
+            p1.slots.forEach(sl => { sl.air = Math.min(100, sl.air + 18); });
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function updatePhase1(dt) {
+        const p1 = state.p1;
+        const cfg = DIFF_CONFIG[state.diff];
+
+        if (p1.banner && p1.banner.t > 0) p1.banner.t -= dt;
+        if (p1.invuln > 0) p1.invuln -= dt;
+
+        // Read desired blanket state for each slot
+        const wantsHide = [];
+        if (p1.isSplit) {
+          const touchPapa = [...activePointers.values()].some(p => p.role === 'papa');
+          const touchIrene = [...activePointers.values()].some(p => p.role === 'irene');
+          wantsHide[0] = !!(keys['KeyS'] || keys['KeyW'] || btnHeld.blanketPapa || touchPapa);
+          wantsHide[1] = !!(keys['ArrowDown'] || keys['ArrowUp'] || keys['Enter'] || btnHeld.blanketIrene || touchIrene);
+        } else {
+          const touchShared = activePointers.size > 0;
+          wantsHide[0] = !!(
+            keys['Space'] || keys['ArrowDown'] || keys['ArrowUp'] ||
+            keys['KeyS'] || keys['KeyW'] ||
+            btnHeld.blanketShared || btnHeld.blanketPapa || btnHeld.blanketIrene || touchShared
+          );
+        }
+
+        // Update blanket slots (air, overheat, animation)
+        p1.slots.forEach((slot, idx) => {
+          const wasHiding = slot.hiding;
+          if (slot.overheat > 0) {
+            slot.overheat -= dt;
+            slot.hiding = false;
+            slot.air = Math.min(100, slot.air + 34 * dt);
+          } else if (wantsHide[idx]) {
+            slot.hiding = true;
+            slot.hideTime += dt;
+            slot.air -= 27 * dt;
+            if (!wasHiding) {
+              AudioFX.blanketDown();
+              burstParticles(slot.x, 345, 6, '#e0f2fe', 'puff', 70);
+            }
+            if (slot.air <= 0) {
+              slot.air = 0;
+              slot.hiding = false;
+              slot.overheat = 0.95;
+              slot.hideTime = 0;
+              AudioFX.overheat();
+              addSpeech(slot.x, 265, '¡Uff, qué calor! ¡Aire!', '#fef08a', 1.3);
+              burstParticles(slot.x, 315, 8, '#bae6fd', 'puff', 95);
+            }
+          } else {
+            if (wasHiding) AudioFX.blanketUp();
+            slot.hiding = false;
+            slot.hideTime = 0;
+            slot.air = Math.min(100, slot.air + 52 * dt);
+          }
+
+          const targetCover = slot.hiding ? 1 : 0;
+          slot.coverAnim += (targetCover - slot.coverAnim) * Math.min(1, dt * 16);
+        });
+
+        // Floating stars bonus (auto-collect if not hiding and pressing Space/click, or gently drift toward awake characters!)
+        p1.starTimer -= dt;
+        if (p1.starTimer <= 0) {
+          spawnBedroomStar();
+          p1.starTimer = 3.2 + Math.random() * 2.0;
+        }
+        for (let i = p1.stars.length - 1; i >= 0; i--) {
+          const s = p1.stars[i];
+          s.life -= dt;
+          if (s.life <= 0) p1.stars.splice(i, 1);
+        }
+
+        // Spawn beasts
+        const activeThreats = p1.beasts.filter(b => b.state !== 'bounced' && b.state !== 'exit').length;
+        if (p1.beastsSpawned < p1.beastsTotal && activeThreats < (state.diff === 'crazy' ? 2 : 1)) {
+          p1.spawnTimer -= dt;
+          if (p1.spawnTimer <= 0) {
+            spawnBeast();
+            p1.spawnTimer = cfg.spawnGap * (0.85 + Math.random() * 0.35);
+          }
+        }
+
+        // Update beasts
+        for (let i = p1.beasts.length - 1; i >= 0; i--) {
+          const b = p1.beasts[i];
+          b.anim += dt * 7;
+
+          if (b.state === 'approach') {
+            const dx = b.approachX - b.x;
+            const dy = b.approachY - b.y;
+            const dist = Math.hypot(dx, dy);
+            const spd = 300 * b.speed;
+            if (dist < 14) {
+              b.x = b.approachX;
+              b.y = b.approachY;
+              b.state = 'telegraph';
+              b.timer = b.telegraphDur;
+              b.facing = b.targetX >= b.x ? 1 : -1;
+              AudioFX.warn();
+            } else {
+              b.x += (dx / dist) * spd * dt;
+              b.y += (dy / dist) * spd * dt;
+            }
+          } else if (b.state === 'telegraph') {
+            b.timer -= dt;
+            if (b.timer <= 0) {
+              b.state = 'strike';
+              b.timer = 0;
+              b.startX = b.x;
+              b.startY = b.y;
+              const line = b.def.attackLines[Math.floor(Math.random() * b.def.attackLines.length)];
+              addPopText(b.x, b.y - 48, line, '#fca5a5', 20);
+              if (AudioFX[b.def.sound]) AudioFX[b.def.sound]();
+            }
+          } else if (b.state === 'strike') {
+            b.timer += dt * (b.def.id === 'pillow' ? 3.5 : 3.2) * b.speed;
+            const t = Math.min(1, b.timer);
+            // Parabolic leap or direct dive
+            b.x = b.startX + (b.targetX - b.startX) * t;
+            const arc = b.def.id === 'pillow' ? 0 : Math.sin(t * Math.PI) * 95;
+            b.y = b.startY + (b.targetY - b.startY) * t - arc;
+
+            if (t >= 1 && !b.struck) {
+              b.struck = true;
+              resolveBeastStrike(b);
+            }
+          } else if (b.state === 'bounced' || b.state === 'exit') {
+            b.x += b.vx * dt;
+            b.y += b.vy * dt;
+            b.vy += 680 * dt;
+            b.rot += b.vrot * dt;
+            if (b.y > H + 120 || b.x < -140 || b.x > W + 140) {
+              p1.beasts.splice(i, 1);
+            }
+          }
+        }
+
+        // Guard in case hearts reached 0 during strike resolution
+        if (state.screen !== 'phase1') return;
+
+        // Check Phase 1 victory!
+        if (p1.beastsCleared >= p1.beastsTotal && p1.beasts.length === 0) {
+          if (state.score > stats.bestScore) {
+            stats.bestScore = state.score;
+            saveStats();
+          }
+          if (state.flow === 'p1only') {
+            AudioFX.fanfare();
+            showResult({
+              emoji: '🛏️🏆',
+              title: '¡DORMITORIO A SALVO!',
+              msg: `¡Habéis espantado a las ${p1.beastsTotal} bestias del cuarto con ${p1.perfectCount} esquivas perfectas bajo la manta!`,
+              statsHtml: `<span>⭐ Puntos: ${state.score}</span><span>✨ Perfectas: ${p1.perfectCount}</span>`,
+              actions: [
+                { label: '🌙 Otra noche más loca', primary: true, fn: () => { state.night++; initPhase1(); } },
+                { label: '⚓ Probar Fase 2: Barco-Gancho', fn: () => startPhase2Direct() },
+                { label: '🏠 Menú', fn: () => showMenu() }
+              ]
+            });
+          } else {
+            // Transition smoothly to Phase 2!
+            AudioFX.bell();
+            state.trans = { t: 0, dur: 3.2 };
+            state.screen = 'transition';
+            updateUIScreen();
+          }
+        }
+      }
+
+      function resolveBeastStrike(b) {
+        const p1 = state.p1;
+        // Which slots are affected?
+        let affected = [];
+        if (!p1.isSplit) {
+          affected = [p1.slots[0]];
+        } else if (b.targetSlot === 2) {
+          affected = [p1.slots[0], p1.slots[1]];
+        } else {
+          affected = [p1.slots[b.targetSlot]];
+        }
+
+        const allProtected = affected.every(sl => sl.hiding);
+        const anyPerfect = allProtected && affected.some(sl => sl.hideTime > 0 && sl.hideTime <= 0.58);
+
+        if (allProtected) {
+          // Bounced comically off the blanket!
+          b.state = 'bounced';
+          b.vx = (b.x < W / 2 ? -1 : 1) * (230 + Math.random() * 140);
+          b.vy = -440 - Math.random() * 100;
+          b.vrot = (Math.random() < 0.5 ? -1 : 1) * 9;
+          p1.beastsCleared++;
+          stats.bounced[b.def.id] = (stats.bounced[b.def.id] || 0) + 1;
+          saveStats();
+
+          state.shake = Math.max(state.shake, b.def.id === 'pillow' ? 9 : 5);
+          const pts = anyPerfect ? 100 : 50;
+          state.score += pts;
+
+          if (anyPerfect) {
+            p1.perfectCount++;
+            AudioFX.perfect();
+            affected.forEach(sl => { sl.air = Math.min(100, sl.air + 22); });
+            // Automatically collect any floating bedroom stars on a Perfect Dodge!
+            while (p1.stars.length > 0) {
+              const st = p1.stars.pop();
+              state.score += 35;
+              burstParticles(st.x, st.y, 7, '#fde047', 'star', 110);
+              addPopText(st.x, st.y - 10, '+35 ⭐', '#fde047', 18);
+            }
+            burstParticles(b.targetX, 340, 14, '#fde047', 'star', 190);
+            addPopText(b.targetX, 275, `¡ESQUIVA PERFECTA! +${pts}`, '#fde047', 23);
+          } else {
+            AudioFX.boing();
+            burstParticles(b.targetX, 340, 10, b.def.id === 'pillow' ? '#ffffff' : '#67e8f9', b.def.id === 'pillow' ? 'feather' : 'star', 140);
+            addPopText(b.targetX, 285, `¡BOING! +${pts}`, '#67e8f9', 22);
+          }
+
+          const line = b.def.blockLines[Math.floor(Math.random() * b.def.blockLines.length)];
+          addSpeech(b.targetX, 235, line, '#e0f2fe', 1.7);
+        } else {
+          // Comic hit!
+          b.state = 'exit';
+          b.vx = (b.facing || 1) * 240;
+          b.vy = -290;
+          b.vrot = 3;
+          p1.beastsCleared++;
+
+          if (p1.invuln <= 0) {
+            p1.hearts = Math.max(0, p1.hearts - 1);
+            p1.invuln = 1.4;
+            state.shake = 12;
+            AudioFX.hurt();
+            burstParticles(b.targetX, 340, 12, '#fb7185', 'confetti', 170);
+            addPopText(b.targetX, 280, b.def.fxWord, '#fb7185', 28);
+            const hitLine = b.def.hitLines[Math.floor(Math.random() * b.def.hitLines.length)];
+            addSpeech(b.targetX, 230, hitLine, '#ffe4e6', 1.6);
+
+            if (p1.hearts <= 0) {
+              if (state.score > stats.bestScore) {
+                stats.bestScore = state.score;
+                saveStats();
+              }
+              showResult({
+                emoji: '😂🧦',
+                title: '¡ATAQUE DE COSQUILLAS TOTAL!',
+                msg: '¡Las bestias del cuarto os pillaron fuera de la manta entre carcajadas! ¿Revancha bajo las sábanas o zarpamos ya en el Barco-Cama?',
+                statsHtml: `<span>⭐ Puntos: ${state.score}</span><span>🛡️ Esquivadas: ${p1.beastsCleared - 1}/${p1.beastsTotal}</span>`,
+                actions: [
+                  { label: '🔁 Reintentar Fase 1', primary: true, fn: () => initPhase1() },
+                  { label: '⚓ Saltar al Barco-Cama', fn: () => initPhase2() },
+                  { label: '🏠 Menú', fn: () => showMenu() }
+                ]
+              });
+            }
+          }
+        }
+      }
+
+      // ============================================================
+      // 6. PHASE 2 INITIALIZATION & LOGIC ("¡EL BARCO-CAMA Y EL GANCHO!")
+      // ============================================================
+      const SEA_TOP = 212;
+
+      function initPhase2() {
+        const cfg = DIFF_CONFIG[state.diff];
+        state.p2 = {
+          timeLeft: cfg.p2Time,
+          maxTime: cfg.p2Time,
+          finished: false,
+          boat: {
+            x: W * 0.5,
+            y: 128,
+            vx: 0,
+            speed: 370,
+            reelSpin: 0,
+            turboHook: 0
+          },
+          hook: {
+            state: 'idle', // 'idle' | 'shooting' | 'retracting' | 'caught'
+            angle: 0,
+            swingPhase: 0,
+            len: 36,
+            maxLen: 460,
+            x: W * 0.5,
+            y: 175,
+            dirX: 0,
+            dirY: 1,
+            speed: cfg.hookSpeed,
+            snaggedItem: null
+          },
+          irene: {
+            x: W * 0.5,
+            y: 420,
+            vx: 0,
+            vy: 0,
+            facing: 1,
+            speed: 285,
+            dashTimer: 0,
+            dashCooldown: 0,
+            dashDirX: 1,
+            dashDirY: 0,
+            caught: false,
+            wiggle: 0,
+            closeCallCooldown: 0,
+            aiDecisionT: 0,
+            aiGoalX: 300,
+            aiGoalY: 420
+          },
+          aiPapa: {
+            cooldown: 1.0,
+            goalX: W * 0.5
+          },
+          items: [],
+          itemSpawnT: 1.4,
+          junkCaught: 0,
+          treasuresCaught: 0,
+          closeCalls: 0,
+          banner: { text: '⚓ ¡PAPÁ LANZA EL GANCHO · IRENE ESQUIVA!', t: 2.5 }
+        };
+
+        // Seed 3 initial floating bedroom sea props
+        for (let i = 0; i < 3; i++) spawnSeaItem(true);
+
+        state.p1 = null;
+        state.bubbles = [];
+        state.popTexts = [];
+        state.particles = [];
+        state.screen = 'phase2';
+        updateUIScreen();
+        addSpeech(W * 0.5, 65, '¡Sube al Barco-Cama, Irene!', '#e0f2fe', 2.0);
+        addSpeech(W * 0.5, 360, '¡Jajaja, soy un pez libre!', '#fce7f3', 2.2);
+      }
+
+      function spawnSeaItem(initial = false) {
+        const p2 = state.p2;
+        if (p2.items.length >= 5) return;
+        const types = [
+          { kind: 'sock',    label: 'Calcetín Pesado',   junk: true,  pullSpeed: 210, msg: '¡Puaj! ¡Eso es un calcetín!', r: 22 },
+          { kind: 'slipper', label: 'Zapatilla-Tiburón', junk: true,  pullSpeed: 195, msg: '¡Pesqué una zapatilla gruñona!', r: 24 },
+          { kind: 'duck',    label: 'Sr. Patito',        junk: false, pullSpeed: 490, msg: '¡Sr. Patito rescatado! +50', r: 20, pts: 50 },
+          { kind: 'bear',    label: 'Osito Pirata',      junk: false, pullSpeed: 460, msg: '¡Osito a salvo! +60', r: 22, pts: 60 },
+          { kind: 'bubble',  label: 'Burbujón Turbo',    junk: false, pullSpeed: 600, msg: '⚡ ¡GANCHO TURBO!', r: 21, pts: 30, turbo: true }
+        ];
+        const t = types[Math.floor(Math.random() * types.length)];
+        const fromLeft = Math.random() < 0.5;
+        p2.items.push({
+          ...t,
+          x: initial ? (110 + Math.random() * (W - 220)) : (fromLeft ? -40 : W + 40),
+          y: 265 + Math.random() * 215,
+          vx: (fromLeft ? 1 : -1) * (42 + Math.random() * 55),
+          bob: Math.random() * Math.PI * 2
+        });
+      }
+
+      function launchHook() {
+        if (state.screen !== 'phase2' || !state.p2 || state.p2.finished) return;
+        const p2 = state.p2;
+        if (p2.hook.state !== 'idle') return;
+        const h = p2.hook;
+        h.state = 'shooting';
+        h.dirX = Math.sin(h.angle);
+        h.dirY = Math.cos(h.angle);
+        h.snaggedItem = null;
+        AudioFX.hookLaunch();
+      }
+
+      function triggerIreneDash() {
+        if (state.screen !== 'phase2' || !state.p2 || state.p2.finished) return;
+        const ir = state.p2.irene;
+        if (ir.caught || ir.dashCooldown > 0) return;
+        ir.dashTimer = 0.34;
+        ir.dashCooldown = 2.6;
+        const mag = Math.hypot(ir.vx, ir.vy);
+        if (mag > 20) {
+          ir.dashDirX = ir.vx / mag;
+          ir.dashDirY = ir.vy / mag;
+        } else {
+          ir.dashDirX = ir.facing || 1;
+          ir.dashDirY = 0;
+        }
+        AudioFX.bubbleDash();
+        burstParticles(ir.x, ir.y, 12, '#bae6fd', 'bubble', 130);
+        addPopText(ir.x, ir.y - 34, '¡TURBO BURBUJA!', '#f472b6', 18);
+      }
+
+      function updatePhase2(dt) {
+        const p2 = state.p2;
+        const cfg = DIFF_CONFIG[state.diff];
+        const boat = p2.boat;
+        const hook = p2.hook;
+        const ir = p2.irene;
+
+        if (p2.banner && p2.banner.t > 0) p2.banner.t -= dt;
+        if (boat.turboHook > 0) boat.turboHook -= dt;
+
+        // Timer only ticks while Irene isn't being reeled in
+        if (!p2.finished && hook.state !== 'caught') {
+          p2.timeLeft -= dt;
+          if (p2.timeLeft <= 0) {
+            p2.timeLeft = 0;
+            finishPhase2('irene');
+            return;
+          }
+        }
+
+        // ---- 1. PAPÁ / BOAT CONTROL ----
+        const papaIsHuman = state.mode === '2p' || state.mode === '1p-papa';
+        let boatMove = 0;
+
+        if (papaIsHuman) {
+          if (keys['KeyA'] || btnHeld.boatLeft || (state.mode === '1p-papa' && keys['ArrowLeft'])) boatMove -= 1;
+          if (keys['KeyD'] || btnHeld.boatRight || (state.mode === '1p-papa' && keys['ArrowRight'])) boatMove += 1;
+
+          // Direct touch/mouse drag in top band
+          const papaPtr = [...activePointers.values()].find(p => p.role === 'papa');
+          if (papaPtr) {
+            const diffX = papaPtr.x - boat.x;
+            if (Math.abs(diffX) > 10) boatMove = Math.max(-1, Math.min(1, diffX / 60));
+          }
+
+          if (keys['KeyS'] || keys['KeyW'] || keys['Space'] || (state.mode === '1p-papa' && (keys['ArrowDown'] || keys['Enter']))) {
+            launchHook();
+          }
+        } else {
+          // Friendly playful AI Papá (when 1P = Irene)
+          const ai = p2.aiPapa;
+          ai.cooldown -= dt;
+          const leadX = ir.x + ir.vx * (0.28 * cfg.aiSkill);
+          ai.goalX += (leadX - ai.goalX) * Math.min(1, dt * (2.6 + cfg.aiSkill * 2.5));
+          const dx = ai.goalX - boat.x;
+          if (Math.abs(dx) > 16) boatMove = Math.max(-1, Math.min(1, dx / 75)) * (0.72 + cfg.aiSkill * 0.25);
+
+          if (hook.state === 'idle' && ai.cooldown <= 0) {
+            // Check if aim ray roughly aligns with Irene
+            const anchorX = boat.x;
+            const anchorY = boat.y + 22;
+            const aimAngle = Math.atan2(ir.x - anchorX, Math.max(40, ir.y - anchorY));
+            const angleDiff = Math.abs(aimAngle - hook.angle);
+            if (angleDiff < 0.19 || (Math.abs(dx) < 55 && Math.abs(hook.angle) < 0.22)) {
+              launchHook();
+              ai.cooldown = Math.max(0.55, 1.55 - cfg.aiSkill * 0.75) + Math.random() * 0.55;
+            }
+          }
+        }
+
+        // Boat moves slower while hook is out so positioning matters
+        const moveFactor = hook.state === 'idle' ? 1 : 0.35;
+        boat.vx += (boatMove * boat.speed * moveFactor - boat.vx) * Math.min(1, dt * 10);
+        boat.x = Math.max(135, Math.min(W - 135, boat.x + boat.vx * dt));
+
+        // ---- 2. IRENE / SWIMMING CONTROL ----
+        const ireneIsHuman = state.mode === '2p' || state.mode === '1p-irene';
+        if (!ir.caught) {
+          if (ir.dashCooldown > 0) ir.dashCooldown -= dt;
+          if (ir.dashTimer > 0) ir.dashTimer -= dt;
+          if (ir.closeCallCooldown > 0) ir.closeCallCooldown -= dt;
+
+          let ix = 0, iy = 0;
+          if (ireneIsHuman) {
+            if (keys['ArrowLeft']  || btnHeld.swimLeft  || (state.mode === '1p-irene' && keys['KeyA'])) ix -= 1;
+            if (keys['ArrowRight'] || btnHeld.swimRight || (state.mode === '1p-irene' && keys['KeyD'])) ix += 1;
+            if (keys['ArrowUp']    || btnHeld.swimUp    || (state.mode === '1p-irene' && keys['KeyW'])) iy -= 1;
+            if (keys['ArrowDown']  || btnHeld.swimDown  || (state.mode === '1p-irene' && keys['KeyS'])) iy += 1;
+
+            const irenePtr = [...activePointers.values()].find(p => p.role === 'irene');
+            if (irenePtr) {
+              const dx = irenePtr.x - ir.x;
+              const dy = irenePtr.y - ir.y;
+              const d = Math.hypot(dx, dy);
+              if (d > 12) {
+                ix = dx / d;
+                iy = dy / d;
+              }
+            }
+            if (keys['ShiftRight'] || keys['ShiftLeft'] || keys['Enter'] || (state.mode === '1p-irene' && keys['Space'])) {
+              triggerIreneDash();
+            }
+          } else {
+            // Playful AI Irene (when 1P = Papá)
+            ir.aiDecisionT -= dt;
+            if (hook.state === 'shooting') {
+              // Dodge perpendicular to incoming hook ray!
+              const toIreneX = ir.x - hook.x;
+              const toIreneY = ir.y - hook.y;
+              const proj = toIreneX * hook.dirX + toIreneY * hook.dirY;
+              const perp = Math.abs(toIreneX * (-hook.dirY) + toIreneY * hook.dirX);
+              if (proj > -10 && proj < 270 && perp < 62) {
+                const escapeSide = (toIreneX * (-hook.dirY) + toIreneY * hook.dirX) >= 0 ? 1 : -1;
+                ix = (-hook.dirY) * escapeSide;
+                iy = (hook.dirX) * escapeSide * 0.45;
+                // Keep away from edges
+                if (ir.x < 120) ix = 1;
+                if (ir.x > W - 120) ix = -1;
+                if (perp < 36 && proj < 135 && ir.dashCooldown <= 0 && Math.random() < cfg.aiSkill * 0.65) {
+                  ir.vx = ix * 200;
+                  ir.vy = iy * 100;
+                  triggerIreneDash();
+                }
+              } else {
+                // Swim teasingly away from boat center
+                ix = ir.x < boat.x ? -0.6 : 0.6;
+              }
+            } else {
+              if (ir.aiDecisionT <= 0) {
+                ir.aiDecisionT = 0.85 + Math.random() * 0.9;
+                ir.aiGoalX = 110 + Math.random() * (W - 220);
+                ir.aiGoalY = 275 + Math.random() * 215;
+              }
+              const dx = ir.aiGoalX - ir.x;
+              const dy = ir.aiGoalY - ir.y;
+              const d = Math.hypot(dx, dy);
+              if (d > 20) {
+                ix = (dx / d) * (0.72 + cfg.aiSkill * 0.25);
+                iy = (dy / d) * (0.72 + cfg.aiSkill * 0.25);
+              }
+            }
+          }
+
+          const len = Math.hypot(ix, iy);
+          if (len > 1) { ix /= len; iy /= len; }
+
+          if (ir.dashTimer > 0) {
+            ir.vx = ir.dashDirX * 560;
+            ir.vy = ir.dashDirY * 420;
+            if (Math.random() < 0.6) {
+              burstParticles(ir.x, ir.y, 1, '#e0f2fe', 'bubble', 40);
+            }
+          } else {
+            ir.vx += (ix * ir.speed - ir.vx) * Math.min(1, dt * 8.5);
+            ir.vy += (iy * (ir.speed * 0.85) - ir.vy) * Math.min(1, dt * 8.5);
+          }
+
+          if (Math.abs(ir.vx) > 15) ir.facing = ir.vx > 0 ? 1 : -1;
+
+          ir.x = Math.max(58, Math.min(W - 58, ir.x + ir.vx * dt));
+          ir.y = Math.max(SEA_TOP + 46, Math.min(H - 46, ir.y + ir.vy * dt));
+        }
+
+        // ---- 3. HOOK PHYSICS & COLLISIONS ----
+        const anchorX = boat.x;
+        const anchorY = boat.y + 22 + Math.sin(state.time * 2.6) * 5;
+
+        if (hook.state === 'idle') {
+          hook.swingPhase += dt * 2.15;
+          // Gentle pendulum + slight inertia from boat movement
+          hook.angle = Math.sin(hook.swingPhase) * 0.44 - (boat.vx / 1400);
+          hook.len = 38;
+          hook.x = anchorX + Math.sin(hook.angle) * hook.len;
+          hook.y = anchorY + Math.cos(hook.angle) * hook.len;
+        } else if (hook.state === 'shooting') {
+          const spd = hook.speed * (boat.turboHook > 0 ? 1.32 : 1);
+          hook.len += spd * dt;
+          hook.x = anchorX + hook.dirX * hook.len;
+          hook.y = anchorY + hook.dirY * hook.len;
+
+          // Splash when crossing sea surface
+          if (hook.y >= SEA_TOP && hook.y - hook.dirY * spd * dt < SEA_TOP) {
+            AudioFX.splash();
+            burstParticles(hook.x, SEA_TOP, 8, '#bae6fd', 'bubble', 110);
+          }
+
+          // Check catch on IRENE!
+          const distIrene = Math.hypot(hook.x - ir.x, hook.y - ir.y);
+          if (distIrene < 34) {
+            if (ir.dashTimer > 0) {
+              // She slipped right past with Turbo-Burbuja!
+              if (ir.closeCallCooldown <= 0) {
+                ir.closeCallCooldown = 0.8;
+                p2.closeCalls++;
+                addPopText(ir.x, ir.y - 42, '¡CASI! ¡NO ME PILLAS!', '#fde047', 19);
+              }
+            } else {
+              // CAUGHT!!
+              hook.state = 'caught';
+              ir.caught = true;
+              AudioFX.ireneCaught();
+              state.shake = 7;
+              burstParticles(ir.x, ir.y, 16, '#fde047', 'star', 170);
+              addPopText(ir.x, ir.y - 40, '¡TE PILLÉ!', '#fde047', 26);
+              addSpeech(ir.x, ir.y - 60, '¡Nooo, soy una sardina libre!', '#fce7f3', 2.0);
+              addSpeech(boat.x, boat.y - 72, '¡Arriba marinera, al barco!', '#e0f2fe', 2.0);
+            }
+          }
+
+          // Check catch on floating bedroom sea items
+          if (hook.state === 'shooting') {
+            for (let i = p2.items.length - 1; i >= 0; i--) {
+              const it = p2.items[i];
+              const iy = it.y + Math.sin(state.time * 2.5 + it.bob) * 6;
+              if (Math.hypot(hook.x - it.x, hook.y - iy) < it.r + 14) {
+                hook.snaggedItem = it;
+                p2.items.splice(i, 1);
+                hook.state = 'retracting';
+                if (it.junk) {
+                  p2.junkCaught++;
+                  AudioFX.junkCatch();
+                  addSpeech(boat.x, boat.y - 65, it.msg, '#fef08a', 1.7);
+                  if (!ir.caught) addSpeech(ir.x, ir.y - 45, '¡Jajaja, eso no soy yo!', '#fce7f3', 1.4);
+                } else {
+                  p2.treasuresCaught++;
+                  state.score += it.pts || 40;
+                  AudioFX.star();
+                  addPopText(it.x, iy - 16, it.msg, '#fde047', 19);
+                  if (it.turbo) boat.turboHook = 5.5;
+                }
+                break;
+              }
+            }
+          }
+
+          // Out of bounds / max length
+          if (hook.state === 'shooting' && (hook.len >= hook.maxLen || hook.y > H - 18 || hook.x < 18 || hook.x > W - 18)) {
+            hook.state = 'retracting';
+          }
+        } else if (hook.state === 'retracting') {
+          const pullSpd = hook.snaggedItem ? hook.snaggedItem.pullSpeed : 560;
+          hook.len -= pullSpd * dt;
+          boat.reelSpin += dt * (hook.snaggedItem && hook.snaggedItem.junk ? 5 : 14);
+          hook.x = anchorX + hook.dirX * hook.len;
+          hook.y = anchorY + hook.dirY * hook.len;
+          if (hook.len <= 38) {
+            hook.len = 38;
+            hook.state = 'idle';
+            if (hook.snaggedItem) {
+              if (!hook.snaggedItem.junk) {
+                burstParticles(boat.x, boat.y, 8, '#fde047', 'star', 120);
+              }
+              hook.snaggedItem = null;
+            }
+          }
+        } else if (hook.state === 'caught') {
+          hook.len -= 240 * dt;
+          boat.reelSpin += dt * 16;
+          ir.wiggle += dt * 18;
+          hook.x = anchorX + hook.dirX * hook.len;
+          hook.y = anchorY + hook.dirY * hook.len;
+          ir.x = hook.x;
+          ir.y = hook.y + 22;
+          if (hook.len <= 44) {
+            finishPhase2('papa');
+            return;
+          }
+        }
+
+        // ---- 4. FLOATING SEA ITEMS ----
+        p2.itemSpawnT -= dt;
+        if (p2.itemSpawnT <= 0) {
+          spawnSeaItem(false);
+          p2.itemSpawnT = 2.6 + Math.random() * 1.8;
+        }
+        for (let i = p2.items.length - 1; i >= 0; i--) {
+          const it = p2.items[i];
+          it.x += it.vx * dt;
+          if (it.x < -70 || it.x > W + 70) p2.items.splice(i, 1);
+        }
+      }
+
+      function finishPhase2(winner) {
+        const p2 = state.p2;
+        if (p2.finished) return;
+        p2.finished = true;
+        AudioFX.fanfare();
+        burstParticles(W * 0.5, H * 0.35, 30, '#fde047', 'confetti', 260);
+        burstParticles(W * 0.3, H * 0.4, 20, '#f472b6', 'confetti', 220);
+        burstParticles(W * 0.7, H * 0.4, 20, '#38bdf8', 'confetti', 220);
+
+        if (winner === 'papa') {
+          stats.papaWins++;
+          state.score += 200 + Math.round(p2.timeLeft * 5);
+        } else {
+          stats.ireneWins++;
+          state.score += 250;
+        }
+        if (state.score > stats.bestScore) stats.bestScore = state.score;
+        saveStats();
+
+        const isPapa = winner === 'papa';
+        showResult({
+          emoji: isPapa ? '⚓🎉' : '🧜‍♀️👑',
+          title: isPapa ? '¡RESCATE EN EL BARCO-CAMA!' : '¡IRENE ESCAPÓ DEL GANCHO!',
+          msg: isPapa
+            ? `¡Capitán Papá ha pescado a Irene entre carcajadas y la ha subido a salvo al barco-cama! (${p2.junkCaught > 0 ? `Aunque antes pescó ${p2.junkCaught} trasto(s) del cuarto...` : '¡Puntería de pirata profesional!'})`
+            : `¡Imposible atraparla! Irene ha esquivado el gancho durante ${p2.maxTime} segundos como una auténtica Sirena Ninja del Dormitorio.`,
+          statsHtml: `
+            <span>⚓ Papá: ${stats.papaWins}</span>
+            <span>🧜‍♀️ Irene: ${stats.ireneWins}</span>
+            <span>⭐ Puntos: ${state.score}</span>
+          `,
+          actions: [
+            { label: '⚓ Revancha Barco-Gancho', primary: true, fn: () => initPhase2() },
+            { label: `🌙 Noche ${state.night + 1} (Aventura)`, fn: () => { state.night++; state.flow = 'full'; initPhase1(); } },
+            { label: '🏠 Menú', fn: () => showMenu() }
+          ]
+        });
+      }
+
+      // ============================================================
+      // 7. ILLUSTRATED STORYBOOK RENDERERS (CANVAS 2D)
+      // ============================================================
+      function roundRect(c, x, y, w, h, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + w, y, x + w, y + h, r);
+        c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r);
+        c.arcTo(x, y, x + w, y, r);
+        c.closePath();
+      }
+
+      function drawGooglyEye(c, x, y, r, lookX = 0, lookY = 0) {
+        c.save();
+        c.fillStyle = '#ffffff';
+        c.strokeStyle = '#241914';
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.arc(x, y, r, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        const ang = Math.atan2(lookY - y, lookX - x);
+        const px = x + Math.cos(ang) * (r * 0.34);
+        const py = y + Math.sin(ang) * (r * 0.34);
+        c.fillStyle = '#181210';
+        c.beginPath();
+        c.arc(px, py, r * 0.45, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = '#ffffff';
+        c.beginPath();
+        c.arc(px - r * 0.16, py - r * 0.16, r * 0.16, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+
+      // ---- CHARACTER DRAWING: IRENE (8 años) ----
+      function drawIrene(c, x, y, opts = {}) {
+        const {
+          scale = 1,
+          facing = 1,
+          mood = 'happy', // 'happy' | 'scared' | 'swim' | 'caught'
+          swimT = 0,
+          goggles = false
+        } = opts;
+
+        c.save();
+        c.translate(x, y);
+        c.scale(facing * scale, scale);
+        c.lineJoin = 'round';
+        c.lineCap = 'round';
+        c.strokeStyle = '#2c1c16';
+        c.lineWidth = 2.6;
+
+        // Body / Pajama shirt (starry coral-pink)
+        c.fillStyle = '#f472b6';
+        roundRect(c, -22, 10, 44, 34, 14);
+        c.fill();
+        c.stroke();
+
+        // Little pajama star
+        c.fillStyle = '#fef08a';
+        c.beginPath();
+        c.arc(0, 26, 4.5, 0, Math.PI * 2);
+        c.fill();
+
+        // Arms
+        const armWave = mood === 'swim' ? Math.sin(swimT * 9) * 14 : (mood === 'caught' ? Math.sin(swimT * 18) * 16 : 0);
+        c.strokeStyle = '#f472b6';
+        c.lineWidth = 10;
+        c.beginPath();
+        c.moveTo(-18, 20);
+        c.lineTo(-30, 12 + armWave);
+        c.moveTo(18, 20);
+        c.lineTo(30, 12 - armWave);
+        c.stroke();
+
+        c.strokeStyle = '#2c1c16';
+        c.lineWidth = 2.4;
+        c.fillStyle = '#fbd2b4';
+        c.beginPath();
+        c.arc(-31, 12 + armWave, 5.5, 0, Math.PI * 2);
+        c.arc(31, 12 - armWave, 5.5, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Pigtails (bouncing!)
+        const pigBob = Math.sin(swimT * 7) * 3;
+        c.fillStyle = '#6b3e26';
+        c.beginPath();
+        c.ellipse(-28, -8 + pigBob, 11, 15, -0.4, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.beginPath();
+        c.ellipse(28, -8 - pigBob, 11, 15, 0.4, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Cute hair ties
+        c.fillStyle = '#fde047';
+        c.beginPath();
+        c.arc(-22, -13, 4.5, 0, Math.PI * 2);
+        c.arc(22, -13, 4.5, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Head
+        c.fillStyle = '#fbd2b4';
+        c.beginPath();
+        c.arc(0, -10, 23, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Bangs / Hair top
+        c.fillStyle = '#6b3e26';
+        c.beginPath();
+        c.arc(0, -14, 23, Math.PI * 1.04, Math.PI * 1.96);
+        c.quadraticCurveTo(10, -20, 0, -23);
+        c.quadraticCurveTo(-12, -18, -22, -12);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        // Diving goggles in Phase 2!
+        if (goggles) {
+          c.fillStyle = '#38bdf8';
+          roundRect(c, -18, -22, 16, 12, 5);
+          c.fill();
+          c.stroke();
+          roundRect(c, 2, -22, 16, 12, 5);
+          c.fill();
+          c.stroke();
+          c.fillStyle = 'rgba(255,255,255,0.65)';
+          c.beginPath();
+          c.arc(-12, -17, 2.5, 0, Math.PI * 2);
+          c.arc(8, -17, 2.5, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // Eyes
+        c.fillStyle = '#241712';
+        const eyeY = -8;
+        if (mood === 'scared') {
+          c.fillStyle = '#fff';
+          c.beginPath();
+          c.arc(-8, eyeY, 5, 0, Math.PI * 2);
+          c.arc(8, eyeY, 5, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          c.fillStyle = '#241712';
+          c.beginPath();
+          c.arc(-8, eyeY, 2.2, 0, Math.PI * 2);
+          c.arc(8, eyeY, 2.2, 0, Math.PI * 2);
+          c.fill();
+        } else {
+          c.beginPath();
+          c.arc(-8, eyeY, 3.2, 0, Math.PI * 2);
+          c.arc(8, eyeY, 3.2, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = '#fff';
+          c.beginPath();
+          c.arc(-9, eyeY - 1.2, 1.2, 0, Math.PI * 2);
+          c.arc(7, eyeY - 1.2, 1.2, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // Rosy cheeks
+        c.fillStyle = 'rgba(244, 114, 182, 0.45)';
+        c.beginPath();
+        c.ellipse(-13, -1, 4.5, 2.8, 0, 0, Math.PI * 2);
+        c.ellipse(13, -1, 4.5, 2.8, 0, 0, Math.PI * 2);
+        c.fill();
+
+        // Mouth
+        c.strokeStyle = '#2c1c16';
+        c.lineWidth = 2.4;
+        if (mood === 'scared' || mood === 'caught') {
+          c.fillStyle = '#be123c';
+          c.beginPath();
+          c.ellipse(0, 3, 5.5, 6.5, 0, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+        } else {
+          c.beginPath();
+          c.arc(0, -1, 8, 0.2, Math.PI - 0.2);
+          c.stroke();
+          if (mood === 'swim') {
+            // Cheeky little tongue out!
+            c.fillStyle = '#fb7185';
+            c.beginPath();
+            c.arc(4, 6, 3.5, 0, Math.PI);
+            c.fill();
+            c.stroke();
+          }
+        }
+        c.restore();
+      }
+
+      // ---- CHARACTER DRAWING: PAPÁ ----
+      function drawPapa(c, x, y, opts = {}) {
+        const {
+          scale = 1,
+          mood = 'happy',
+          pirateHat = false,
+          reelSpin = 0
+        } = opts;
+
+        c.save();
+        c.translate(x, y);
+        c.scale(scale, scale);
+        c.lineJoin = 'round';
+        c.lineCap = 'round';
+        c.strokeStyle = '#2c1c16';
+        c.lineWidth = 2.6;
+
+        // Striped pajama body
+        c.fillStyle = '#38bdf8';
+        roundRect(c, -26, 12, 52, 40, 14);
+        c.fill();
+        c.stroke();
+        c.strokeStyle = '#0284c7';
+        c.lineWidth = 3;
+        for (let sx = -16; sx <= 16; sx += 10) {
+          c.beginPath();
+          c.moveTo(sx, 14);
+          c.lineTo(sx, 50);
+          c.stroke();
+        }
+        c.strokeStyle = '#2c1c16';
+        c.lineWidth = 2.6;
+
+        // Head
+        c.fillStyle = '#f5c6a5';
+        c.beginPath();
+        c.arc(0, -12, 25, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Friendly beard/stubble
+        c.fillStyle = '#5c3c28';
+        c.beginPath();
+        c.arc(0, -9, 23, 0.25, Math.PI - 0.25);
+        c.quadraticCurveTo(0, 6, 22, -3);
+        c.closePath();
+        c.fill();
+
+        // Hair
+        c.fillStyle = '#4a2e1d';
+        c.beginPath();
+        c.arc(0, -16, 25, Math.PI * 1.05, Math.PI * 1.95);
+        c.lineTo(18, -28);
+        c.lineTo(6, -34);
+        c.lineTo(-4, -27);
+        c.lineTo(-16, -33);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        // Newspaper pirate hat in Phase 2!
+        if (pirateHat) {
+          c.fillStyle = '#f5f0e1';
+          c.beginPath();
+          c.moveTo(-36, -24);
+          c.lineTo(0, -56);
+          c.lineTo(36, -24);
+          c.closePath();
+          c.fill();
+          c.stroke();
+          // Brim fold
+          c.fillStyle = '#e7dec8';
+          roundRect(c, -35, -30, 70, 11, 4);
+          c.fill();
+          c.stroke();
+          // Cute drawn star/anchor on paper hat
+          c.fillStyle = '#0e7490';
+          c.font = 'bold 13px sans-serif';
+          c.textAlign = 'center';
+          c.fillText('⚓', 0, -34);
+        }
+
+        // Eyes
+        c.fillStyle = '#241712';
+        c.beginPath();
+        c.arc(-9, -12, 3.3, 0, Math.PI * 2);
+        c.arc(9, -12, 3.3, 0, Math.PI * 2);
+        c.fill();
+
+        // Expressive eyebrows
+        c.beginPath();
+        c.moveTo(-14, -19); c.lineTo(-4, mood === 'scared' ? -22 : -18);
+        c.moveTo(4, mood === 'scared' ? -22 : -18); c.lineTo(14, -19);
+        c.stroke();
+
+        // Smile
+        c.strokeStyle = '#ffffff';
+        c.lineWidth = 3;
+        c.beginPath();
+        if (mood === 'scared') {
+          c.fillStyle = '#9f1239';
+          c.arc(0, 1, 5.5, 0, Math.PI * 2);
+          c.fill();
+        } else {
+          c.arc(0, -4, 9, 0.25, Math.PI - 0.25);
+          c.stroke();
+        }
+
+        // Reeling arm when in boat
+        if (pirateHat) {
+          const rx = 24 + Math.cos(reelSpin) * 7;
+          const ry = 22 + Math.sin(reelSpin) * 7;
+          c.strokeStyle = '#2c1c16';
+          c.lineWidth = 2.6;
+          c.fillStyle = '#f5c6a5';
+          c.beginPath();
+          c.arc(rx, ry, 6.5, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+        }
+
+        c.restore();
+      }
+
+      // ---- BEAST ILLUSTRATIONS (6 ABSURD BEDROOM OBJECTS) ----
+      function drawBeast(c, defId, x, y, opts = {}) {
+        const {
+          scale = 1,
+          facing = 1,
+          anim = 0,
+          rot = 0,
+          telegraph = 0, // 0..1 intensity
+          lookX = W / 2,
+          lookY = 350
+        } = opts;
+
+        c.save();
+        c.translate(x, y);
+        c.rotate(rot);
+        if (telegraph > 0) {
+          const j = Math.sin(anim * 9) * 3 * telegraph;
+          c.translate(j, -j * 0.5);
+        }
+        c.scale(facing * scale, scale);
+        c.lineJoin = 'round';
+        c.lineCap = 'round';
+        c.strokeStyle = '#241812';
+        c.lineWidth = 2.8;
+
+        const chomp = 0.28 + Math.abs(Math.sin(anim * (telegraph > 0 ? 3.2 : 1.5))) * (telegraph > 0 ? 0.55 : 0.35);
+
+        if (defId === 'slipper') {
+          // Cocodrilo-Zapatilla: hinged house slipper with cardboard teeth & pink sock tongue!
+          // Lower sole
+          c.save();
+          c.rotate(chomp * 0.45);
+          c.fillStyle = '#1e3a5f';
+          roundRect(c, -40, 4, 82, 16, 8);
+          c.fill();
+          c.stroke();
+          // Lower cardboard teeth
+          c.fillStyle = '#fffbeb';
+          for (let tx = -2; tx <= 30; tx += 10) {
+            c.beginPath();
+            c.moveTo(tx, 4); c.lineTo(tx + 5, -5); c.lineTo(tx + 10, 4);
+            c.closePath(); c.fill(); c.stroke();
+          }
+          c.restore();
+
+          // Pink sock tongue sticking out!
+          c.fillStyle = '#fb7185';
+          c.beginPath();
+          c.ellipse(16, 4, 16, 6, 0.15, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+
+          // Upper fuzzy slipper vamp
+          c.save();
+          c.rotate(-chomp * 0.55);
+          c.fillStyle = '#3b82f6';
+          c.beginPath();
+          c.moveTo(-40, 6);
+          c.quadraticCurveTo(-36, -24, 6, -22);
+          c.quadraticCurveTo(40, -18, 42, 4);
+          c.lineTo(-40, 6);
+          c.closePath();
+          c.fill();
+          c.stroke();
+          // Cozy plaid stripes
+          c.strokeStyle = '#93c5fd';
+          c.lineWidth = 2.5;
+          c.beginPath();
+          c.moveTo(-18, -19); c.lineTo(-10, 2);
+          c.moveTo(0, -20); c.lineTo(8, 2);
+          c.moveTo(18, -17); c.lineTo(25, 2);
+          c.stroke();
+          // Upper teeth
+          c.strokeStyle = '#241812';
+          c.lineWidth = 2.2;
+          c.fillStyle = '#fffbeb';
+          for (let tx = 2; tx <= 30; tx += 10) {
+            c.beginPath();
+            c.moveTo(tx, 4); c.lineTo(tx + 5, 13); c.lineTo(tx + 10, 4);
+            c.closePath(); c.fill(); c.stroke();
+          }
+          // Googly eyes on top of slipper
+          drawGooglyEye(c, -8, -22, 9.5, 40, 10);
+          drawGooglyEye(c, 8, -21, 9.5, 40, 10);
+          c.restore();
+
+        } else if (defId === 'clothespin') {
+          // Tiburón-Pinza: wooden clothespin with taped grey shark fin!
+          // Shark fin taped on top
+          c.fillStyle = '#94a3b8';
+          c.beginPath();
+          c.moveTo(-10, -14);
+          c.quadraticCurveTo(-4, -44, 12, -36);
+          c.quadraticCurveTo(4, -22, 12, -14);
+          c.closePath();
+          c.fill();
+          c.stroke();
+          // Masking tape holding the fin
+          c.fillStyle = '#fef3c7';
+          c.fillRect(-10, -18, 18, 7);
+          c.strokeRect(-10, -18, 18, 7);
+
+          // Upper wooden jaw
+          c.save();
+          c.translate(-6, 0);
+          c.rotate(-chomp * 0.45);
+          c.fillStyle = '#eab308';
+          c.beginPath();
+          c.moveTo(-36, -12); c.lineTo(44, -6); c.lineTo(44, 0); c.lineTo(-36, -2);
+          c.closePath(); c.fill(); c.stroke();
+          c.restore();
+
+          // Lower wooden jaw
+          c.save();
+          c.translate(-6, 0);
+          c.rotate(chomp * 0.45);
+          c.fillStyle = '#ca8a04';
+          c.beginPath();
+          c.moveTo(-36, 12); c.lineTo(44, 6); c.lineTo(44, 0); c.lineTo(-36, 2);
+          c.closePath(); c.fill(); c.stroke();
+          c.restore();
+
+          // Metal spring coil in middle
+          c.fillStyle = '#cbd5e1';
+          c.beginPath();
+          c.arc(-6, 0, 9.5, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          c.beginPath();
+          c.arc(-6, 0, 4, 0, Math.PI * 2);
+          c.stroke();
+
+          drawGooglyEye(c, 12, -12, 8.5, 50, 0);
+          drawGooglyEye(c, 25, -10, 7.5, 50, 0);
+
+        } else if (defId === 'scissors') {
+          // Cangrejo-Tijeras: red craft scissors walking sideways snapping!
+          // Silver blades
+          c.save();
+          c.rotate(-chomp * 0.5);
+          c.fillStyle = '#e2e8f0';
+          c.beginPath();
+          c.moveTo(-2, -4); c.lineTo(44, -10);
+          c.quadraticCurveTo(49, -5, 44, 0);
+          c.lineTo(-2, 3); c.closePath();
+          c.fill(); c.stroke();
+          c.restore();
+
+          c.save();
+          c.rotate(chomp * 0.5);
+          c.fillStyle = '#cbd5e1';
+          c.beginPath();
+          c.moveTo(-2, 4); c.lineTo(44, 10);
+          c.quadraticCurveTo(49, 5, 44, 0);
+          c.lineTo(-2, -3); c.closePath();
+          c.fill(); c.stroke();
+          c.restore();
+
+          // Red plastic finger loops (crab body!)
+          c.fillStyle = '#ef4444';
+          c.beginPath();
+          c.ellipse(-22, -13, 18, 12, -0.25, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+          c.beginPath();
+          c.ellipse(-22, 13, 18, 12, 0.25, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+
+          // Finger holes
+          c.fillStyle = '#1b1a36';
+          c.beginPath();
+          c.ellipse(-24, -13, 8, 5, -0.25, 0, Math.PI * 2);
+          c.ellipse(-24, 13, 8, 5, 0.25, 0, Math.PI * 2);
+          c.fill();
+
+          // Pivot screw
+          c.fillStyle = '#94a3b8';
+          c.beginPath();
+          c.arc(2, 0, 4.5, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+
+          // Googly eyes on stalks like a crab!
+          drawGooglyEye(c, -10, -25, 8.5, 40, 0);
+          drawGooglyEye(c, 5, -24, 8.5, 40, 0);
+
+        } else if (defId === 'pillow') {
+          // Elefante-Almohada: giant plump polka-dot pillow with knotted ears!
+          const flap = Math.sin(anim * 2.2) * 8;
+          // Floppy pillow corners as elephant ears
+          c.fillStyle = '#a78bfa';
+          c.beginPath();
+          c.ellipse(-42, -6 + flap, 18, 22, -0.35, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+          c.beginPath();
+          c.ellipse(42, -6 + flap, 18, 22, 0.35, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+
+          // Plump pillow body
+          c.fillStyle = '#ede9fe';
+          roundRect(c, -40, -28, 80, 56, 22);
+          c.fill(); c.stroke();
+
+          // Polka dots
+          c.fillStyle = '#c4b5fd';
+          [[-24, -14], [24, -12], [-22, 14], [22, 15], [0, -18]].forEach(([dx, dy]) => {
+            c.beginPath(); c.arc(dx, dy, 5, 0, Math.PI * 2); c.fill();
+          });
+
+          // Little pillowcase trunk
+          c.fillStyle = '#ddd6fe';
+          c.beginPath();
+          c.moveTo(-6, 4);
+          c.quadraticCurveTo(0, 32, 12, 24 + Math.sin(anim * 3) * 4);
+          c.quadraticCurveTo(16, 18, 6, 4);
+          c.closePath();
+          c.fill(); c.stroke();
+
+          drawGooglyEye(c, -13, -5, 9.5, 0, 50);
+          drawGooglyEye(c, 13, -5, 9.5, 0, 50);
+
+        } else if (defId === 'sock') {
+          // Serpiente-Calcetín: undulating striped lonely sock with button eyes!
+          const pts = [];
+          for (let i = 0; i < 6; i++) {
+            pts.push({
+              x: -44 + i * 16,
+              y: Math.sin(anim * 2.2 + i * 0.9) * 11
+            });
+          }
+          // Thick sock body
+          c.strokeStyle = '#241812';
+          c.lineWidth = 26;
+          c.beginPath();
+          c.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y);
+          c.stroke();
+
+          c.strokeStyle = '#10b981';
+          c.lineWidth = 20;
+          c.stroke();
+
+          // Funny yellow & orange sock stripes
+          c.strokeStyle = '#fde047';
+          c.lineWidth = 5;
+          for (let i = 1; i < pts.length - 1; i += 2) {
+            c.beginPath();
+            c.moveTo(pts[i].x, pts[i].y - 9);
+            c.lineTo(pts[i].x, pts[i].y + 9);
+            c.stroke();
+          }
+
+          // Red yarn forked tongue!
+          const head = pts[pts.length - 1];
+          c.strokeStyle = '#ef4444';
+          c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(head.x + 10, head.y);
+          c.lineTo(head.x + 25, head.y);
+          c.lineTo(head.x + 31, head.y - 5);
+          c.moveTo(head.x + 25, head.y);
+          c.lineTo(head.x + 31, head.y + 5);
+          c.stroke();
+
+          // Button eyes
+          drawGooglyEye(c, head.x + 2, head.y - 10, 7.5, 50, 0);
+          drawGooglyEye(c, head.x + 11, head.y - 7, 7, 50, 0);
+
+        } else if (defId === 'stapler') {
+          // T-Rex-Grapadora: red desktop stapler with shiny staple teeth & stubby T-Rex arms!
+          // Base
+          c.fillStyle = '#475569';
+          roundRect(c, -40, 8, 80, 13, 6);
+          c.fill(); c.stroke();
+
+          // Stubby drawn T-Rex arms
+          c.strokeStyle = '#dc2626';
+          c.lineWidth = 4;
+          c.beginPath();
+          c.moveTo(10, 8); c.lineTo(22, 16); c.lineTo(26, 13);
+          c.stroke();
+          c.strokeStyle = '#241812';
+          c.lineWidth = 2.6;
+
+          // Hinged red top jaw
+          c.save();
+          c.translate(-32, 8);
+          c.rotate(-chomp * 0.72);
+          // Shiny metal staples row (teeth!)
+          c.fillStyle = '#e2e8f0';
+          c.fillRect(34, -2, 34, 8);
+          c.strokeRect(34, -2, 34, 8);
+          for (let sx = 39; sx <= 64; sx += 5) {
+            c.beginPath(); c.moveTo(sx, -2); c.lineTo(sx, 6); c.stroke();
+          }
+          // Red stapler head
+          c.fillStyle = '#ef4444';
+          roundRect(c, -6, -24, 78, 22, 10);
+          c.fill(); c.stroke();
+          // Angry T-Rex eyebrows + googly eyes
+          drawGooglyEye(c, 42, -24, 9, 80, 0);
+          drawGooglyEye(c, 57, -23, 8.5, 80, 0);
+          c.strokeStyle = '#241812';
+          c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(34, -34); c.lineTo(48, -30);
+          c.moveTo(64, -33); c.lineTo(52, -29);
+          c.stroke();
+          c.restore();
+        }
+
+        c.restore();
+      }
+
+      // ---- BEDROOM BACKGROUND (PHASE 1 & MENU) ----
+      function drawBedroomBg(c, t) {
+        // Warm cozy twilight wallpaper
+        const wallGrad = c.createLinearGradient(0, 0, 0, H);
+        wallGrad.addColorStop(0, '#1e1b4b');
+        wallGrad.addColorStop(0.65, '#312e68');
+        wallGrad.addColorStop(1, '#3b2c4e');
+        c.fillStyle = wallGrad;
+        c.fillRect(0, 0, W, H);
+
+        // Soft wallpaper stripes
+        c.fillStyle = 'rgba(255,255,255,0.03)';
+        for (let sx = 0; sx < W; sx += 56) {
+          c.fillRect(sx, 0, 24, 420);
+        }
+
+        // Glow-in-the-dark ceiling stars
+        const stars = [[95, 58], [185, 38], [320, 62], [650, 46], [760, 74], [860, 42], [490, 40]];
+        stars.forEach(([sx, sy], i) => {
+          const glow = 0.55 + Math.sin(t * 2.4 + i) * 0.35;
+          c.fillStyle = `rgba(254, 240, 138, ${glow})`;
+          c.beginPath();
+          c.arc(sx, sy, 3.2 + (i % 2), 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // Window on the left with smiling crescent moon
+        c.save();
+        c.fillStyle = '#0f172a';
+        roundRect(c, 58, 86, 146, 152, 12);
+        c.fill();
+        c.strokeStyle = '#d6d3d1';
+        c.lineWidth = 7;
+        c.stroke();
+
+        // Moon inside window
+        c.fillStyle = '#fde68a';
+        c.beginPath();
+        c.arc(118, 142, 24, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = '#0f172a';
+        c.beginPath();
+        c.arc(128, 136, 20, 0, Math.PI * 2);
+        c.fill();
+
+        // Window crossbars
+        c.strokeStyle = '#d6d3d1';
+        c.lineWidth = 5;
+        c.beginPath();
+        c.moveTo(131, 86); c.lineTo(131, 238);
+        c.moveTo(58, 162); c.lineTo(204, 162);
+        c.stroke();
+
+        // Swaying curtains
+        const sway = Math.sin(t * 1.4) * 4;
+        c.fillStyle = '#fb7185';
+        c.beginPath();
+        c.moveTo(48, 80); c.lineTo(92, 80); c.quadraticCurveTo(72 + sway, 170, 80 + sway, 246); c.lineTo(44, 246);
+        c.closePath(); c.fill();
+        c.beginPath();
+        c.moveTo(214, 80); c.lineTo(170, 80); c.quadraticCurveTo(190 - sway, 170, 182 - sway, 246); c.lineTo(218, 246);
+        c.closePath(); c.fill();
+        c.restore();
+
+        // Bookshelf on the right with colorful books & teddy bear
+        c.save();
+        c.fillStyle = '#78350f';
+        roundRect(c, 748, 126, 156, 14, 5);
+        c.fill();
+        c.strokeStyle = '#291509';
+        c.lineWidth = 2.5;
+        c.stroke();
+        const bookCols = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#c084fc'];
+        bookCols.forEach((col, i) => {
+          const bh = 38 + (i % 3) * 8;
+          c.fillStyle = col;
+          roundRect(c, 760 + i * 16, 126 - bh, 14, bh, 3);
+          c.fill(); c.stroke();
+        });
+        // Tiny teddy on shelf
+        c.fillStyle = '#b45309';
+        c.beginPath(); c.arc(872, 108, 14, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.beginPath(); c.arc(861, 96, 5, 0, Math.PI * 2); c.arc(883, 96, 5, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.fillStyle = '#fde68a';
+        c.beginPath(); c.arc(872, 111, 5, 0, Math.PI * 2); c.fill();
+        c.restore();
+
+        // Warm wooden floor & cozy blue carpet (foreshadowing Phase 2's Carpet-Ocean!)
+        c.fillStyle = '#5c3a21';
+        c.fillRect(0, 424, W, H - 424);
+        c.strokeStyle = '#452814';
+        c.lineWidth = 2;
+        for (let fy = 448; fy < H; fy += 28) {
+          c.beginPath(); c.moveTo(0, fy); c.lineTo(W, fy); c.stroke();
+        }
+        // Carpet
+        c.fillStyle = '#1d4ed8';
+        c.beginPath();
+        c.ellipse(W * 0.5, 512, 370, 56, 0, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = '#60a5fa';
+        c.lineWidth = 4;
+        c.setLineDash([12, 8]);
+        c.stroke();
+        c.setLineDash([]);
+
+        // Bedside table + warm glowing lamp on left
+        c.save();
+        const lampGlow = c.createRadialGradient(135, 315, 10, 135, 315, 155);
+        lampGlow.addColorStop(0, 'rgba(253, 224, 71, 0.34)');
+        lampGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+        c.fillStyle = lampGlow;
+        c.beginPath(); c.arc(135, 315, 155, 0, Math.PI * 2); c.fill();
+
+        c.fillStyle = '#92400e';
+        c.strokeStyle = '#291509';
+        c.lineWidth = 2.6;
+        roundRect(c, 92, 362, 84, 76, 8);
+        c.fill(); c.stroke();
+        c.fillStyle = '#d97706';
+        c.beginPath(); c.arc(134, 388, 4.5, 0, Math.PI * 2); c.fill();
+        // Lamp stand & shade
+        c.fillStyle = '#fcd34d';
+        c.fillRect(129, 336, 10, 26);
+        c.strokeRect(129, 336, 10, 26);
+        c.fillStyle = '#fef08a';
+        c.beginPath();
+        c.moveTo(116, 304); c.lineTo(152, 304); c.lineTo(164, 338); c.lineTo(104, 338);
+        c.closePath(); c.fill(); c.stroke();
+        c.restore();
+      }
+
+      // ---- THE HERO BED + MAGIC BLANKET (PHASE 1) ----
+      function drawBedAndPlayers(c, p1, t) {
+        const bedX = 225;
+        const bedW = 510;
+        const bedY = 344;
+
+        c.save();
+        c.strokeStyle = '#291509';
+        c.lineWidth = 3;
+
+        // Wooden headboard
+        c.fillStyle = '#9a4f1c';
+        roundRect(c, bedX - 10, bedY - 104, bedW + 20, 118, 22);
+        c.fill(); c.stroke();
+        // Headboard inner panel
+        c.fillStyle = '#b45d22';
+        roundRect(c, bedX + 10, bedY - 88, bedW - 20, 82, 14);
+        c.fill(); c.stroke();
+
+        // Fluffy pillows behind players
+        c.fillStyle = '#fef9c3';
+        roundRect(c, bedX + 35, bedY - 58, 195, 66, 24);
+        c.fill(); c.stroke();
+        roundRect(c, bedX + bedW - 230, bedY - 58, 195, 66, 24);
+        c.fill(); c.stroke();
+
+        // Draw Papá & Irene sitting on the bed (they duck smoothly when covered!)
+        const papaSlot = p1.isSplit ? p1.slots[0] : p1.slots[0];
+        const ireneSlot = p1.isSplit ? p1.slots[1] : p1.slots[0];
+
+        const threatNear = p1.beasts.some(b => b.state === 'telegraph' || b.state === 'strike');
+        const blink = p1.invuln > 0 && Math.floor(t * 16) % 2 === 0;
+
+        if (!blink) {
+          const papaDuck = papaSlot.coverAnim * 46;
+          drawPapa(c, 372, 314 + papaDuck, {
+            scale: 1.04,
+            mood: threatNear && !papaSlot.hiding ? 'scared' : 'happy'
+          });
+
+          const ireneDuck = ireneSlot.coverAnim * 46;
+          drawIrene(c, 588, 320 + ireneDuck, {
+            scale: 1.04,
+            facing: -1,
+            mood: threatNear && !ireneSlot.hiding ? 'scared' : 'happy',
+            swimT: t * 0.5
+          });
+        }
+
+        // Mattress base
+        c.fillStyle = '#f8fafc';
+        roundRect(c, bedX, bedY + 12, bedW, 88, 16);
+        c.fill(); c.stroke();
+
+        // THE MAGIC QUILTED BLANKET (shared or split into 2 halves!)
+        function drawBlanketSegment(x, w, coverAnim, accentColor, label, isHiding) {
+          const topY = bedY + 18 - coverAnim * 102;
+          const dome = coverAnim * 24;
+          const breathe = isHiding ? Math.sin(t * 9) * 3 : 0;
+
+          c.save();
+          c.fillStyle = accentColor;
+          c.strokeStyle = '#1e1b2e';
+          c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(x, bedY + 96);
+          c.lineTo(x, topY + 14);
+          c.quadraticCurveTo(x + w * 0.5, topY - dome + breathe, x + w, topY + 14);
+          c.lineTo(x + w, bedY + 96);
+          c.closePath();
+          c.fill();
+          c.stroke();
+
+          // Cute golden stars pattern on the blanket
+          c.fillStyle = 'rgba(254, 240, 138, 0.78)';
+          const cols = Math.max(2, Math.floor(w / 78));
+          for (let i = 0; i < cols; i++) {
+            const sx = x + 36 + i * ((w - 72) / Math.max(1, cols - 1));
+            const sy = topY + 46 + (i % 2) * 18;
+            c.beginPath();
+            c.arc(sx, sy, 5, 0, Math.PI * 2);
+            c.fill();
+          }
+
+          // Top cozy blanket fold hem
+          c.fillStyle = '#fef3c7';
+          c.beginPath();
+          c.moveTo(x + 2, topY + 14);
+          c.quadraticCurveTo(x + w * 0.5, topY - dome + breathe, x + w - 2, topY + 14);
+          c.quadraticCurveTo(x + w * 0.5, topY - dome + breathe + 14, x + 2, topY + 26);
+          c.closePath();
+          c.fill();
+          c.stroke();
+
+          // Cute giggling text when tucked underneath!
+          if (coverAnim > 0.72) {
+            c.fillStyle = '#fef08a';
+            c.font = 'bold 13px sans-serif';
+            c.textAlign = 'center';
+            c.fillText('¡Jijiji! 🛡️', x + w * 0.5, topY + 38 + breathe);
+          }
+          c.restore();
+        }
+
+        if (p1.isSplit) {
+          drawBlanketSegment(bedX - 4, bedW / 2 + 2, p1.slots[0].coverAnim, '#0891b2', 'Papá', p1.slots[0].hiding);
+          drawBlanketSegment(bedX + bedW / 2 + 2, bedW / 2 + 2, p1.slots[1].coverAnim, '#db2777', 'Irene', p1.slots[1].hiding);
+        } else {
+          drawBlanketSegment(bedX - 4, bedW + 8, p1.slots[0].coverAnim, '#0d9488', 'Todos', p1.slots[0].hiding);
+        }
+
+        // Bed wooden footboard posts
+        c.fillStyle = '#7c2d12';
+        roundRect(c, bedX - 16, bedY + 86, bedW + 32, 22, 8);
+        c.fill(); c.stroke();
+        c.fillRect(bedX - 4, bedY + 106, 22, 34);
+        c.strokeRect(bedX - 4, bedY + 106, 22, 34);
+        c.fillRect(bedX + bedW - 18, bedY + 106, 22, 34);
+        c.strokeRect(bedX + bedW - 18, bedY + 106, 22, 34);
+
+        c.restore();
+      }
+
+      // ---- PHASE 1 FULL DRAW ----
+      function renderPhase1(c) {
+        const p1 = state.p1;
+        drawBedroomBg(c, state.time);
+        drawBedAndPlayers(c, p1, state.time);
+
+        // Draw floating collectable stars
+        p1.stars.forEach(s => {
+          const sy = s.y + Math.sin(state.time * 4 + s.bob) * 6;
+          c.save();
+          c.translate(s.x, sy);
+          c.rotate(Math.sin(state.time * 3 + s.bob) * 0.25);
+          c.fillStyle = '#fde047';
+          c.strokeStyle = '#b45309';
+          c.lineWidth = 2.4;
+          c.beginPath();
+          for (let i = 0; i < 10; i++) {
+            const r = i % 2 === 0 ? 17 : 7.5;
+            const a = (Math.PI * i) / 5 - Math.PI / 2;
+            if (i === 0) c.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+            else c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+          }
+          c.closePath();
+          c.fill();
+          c.stroke();
+          c.restore();
+        });
+
+        // Draw telegraph warnings (clear dotted attack line / shadow + exclamation!)
+        p1.beasts.forEach(b => {
+          if (b.state === 'telegraph') {
+            const prog = 1 - Math.max(0, b.timer / b.telegraphDur);
+            c.save();
+            // Ground/bed target ring
+            c.fillStyle = `rgba(251, 113, 133, ${0.18 + prog * 0.28})`;
+            c.strokeStyle = '#fda4af';
+            c.lineWidth = 3;
+            c.beginPath();
+            c.ellipse(b.targetX, 346, (b.targetSlot === 2 && p1.isSplit ? 165 : 78) * (0.65 + prog * 0.35), 24, 0, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+
+            // Dotted line from beast to target
+            c.setLineDash([8, 7]);
+            c.strokeStyle = '#fde047';
+            c.lineWidth = 3;
+            c.beginPath();
+            c.moveTo(b.x, b.y);
+            c.lineTo(b.targetX, 340);
+            c.stroke();
+            c.setLineDash([]);
+
+            // Big pulsing warning badge above beast
+            const pulse = 1 + Math.sin(state.time * 24) * 0.12;
+            c.translate(b.x, b.y - 56);
+            c.scale(pulse, pulse);
+            c.fillStyle = '#ef4444';
+            c.strokeStyle = '#fef08a';
+            c.lineWidth = 2.5;
+            roundRect(c, -66, -16, 132, 28, 12);
+            c.fill(); c.stroke();
+            c.fillStyle = '#ffffff';
+            c.font = '900 13px sans-serif';
+            c.textAlign = 'center';
+            const whoTag = p1.isSplit
+              ? (b.targetSlot === 0 ? '→ PAPÁ' : (b.targetSlot === 1 ? '→ IRENE' : '→ ¡LOS DOS!'))
+              : '¡A LA MANTA!';
+            c.fillText(`⚠️ ${b.def.verb} ${whoTag}`, 0, 2);
+            c.restore();
+          }
+        });
+
+        // Draw beasts
+        p1.beasts.forEach(b => {
+          drawBeast(c, b.def.id, b.x, b.y, {
+            scale: 1.08,
+            facing: b.facing,
+            anim: b.anim,
+            rot: b.rot,
+            telegraph: b.state === 'telegraph' ? (1 - b.timer / b.telegraphDur) : 0
+          });
+        });
+
+        // ---- PHASE 1 HUD ----
+        // Top-left: Hearts (Cosquillas)
+        c.save();
+        c.fillStyle = 'rgba(17, 17, 40, 0.78)';
+        roundRect(c, 16, 14, 214, 46, 14);
+        c.fill();
+        c.strokeStyle = 'rgba(255,255,255,0.18)';
+        c.lineWidth = 1.5;
+        c.stroke();
+        c.font = '21px sans-serif';
+        c.textAlign = 'left';
+        for (let i = 0; i < p1.maxHearts; i++) {
+          c.globalAlpha = i < p1.hearts ? 1 : 0.25;
+          c.fillText('❤️', 28 + i * 36, 44);
+        }
+        c.globalAlpha = 1;
+
+        // Top-center: Progress (Beasts remaining)
+        c.fillStyle = 'rgba(17, 17, 40, 0.78)';
+        roundRect(c, W / 2 - 145, 14, 290, 46, 14);
+        c.fill(); c.stroke();
+        c.fillStyle = '#fde68a';
+        c.font = '800 13px sans-serif';
+        c.textAlign = 'center';
+        c.fillText(`🌙 NOCHE ${state.night} · BESTIAS: ${p1.beastsCleared}/${p1.beastsTotal}`, W / 2, 33);
+        // Mini progress bar
+        c.fillStyle = 'rgba(255,255,255,0.16)';
+        roundRect(c, W / 2 - 115, 41, 230, 9, 5);
+        c.fill();
+        c.fillStyle = '#34d399';
+        roundRect(c, W / 2 - 115, 41, 230 * Math.min(1, p1.beastsCleared / p1.beastsTotal), 9, 5);
+        c.fill();
+
+        // Top-right: Score
+        c.fillStyle = 'rgba(17, 17, 40, 0.78)';
+        roundRect(c, W - 180, 14, 164, 46, 14);
+        c.fill(); c.stroke();
+        c.fillStyle = '#fde047';
+        c.font = '900 18px sans-serif';
+        c.textAlign = 'right';
+        c.fillText(`⭐ ${state.score}`, W - 30, 44);
+
+        // Air-under-blanket bars right below the bed!
+        p1.slots.forEach((slot) => {
+          const bw = p1.isSplit ? 180 : 250;
+          const bx = slot.x - bw / 2;
+          const by = 496;
+          c.fillStyle = 'rgba(17, 17, 40, 0.82)';
+          roundRect(c, bx - 10, by - 14, bw + 20, 44, 12);
+          c.fill();
+          c.strokeStyle = slot.overheat > 0 ? '#f87171' : 'rgba(255,255,255,0.2)';
+          c.lineWidth = 2;
+          c.stroke();
+
+          c.fillStyle = slot.overheat > 0 ? '#fca5a5' : '#e0f2fe';
+          c.font = '800 12px sans-serif';
+          c.textAlign = 'center';
+          const statusTxt = slot.overheat > 0
+            ? `🥵 ¡SIN AIRE! (${slot.name})`
+            : `💨 Aire bajo la manta · ${slot.name}`;
+          c.fillText(statusTxt, slot.x, by + 2);
+
+          c.fillStyle = 'rgba(255,255,255,0.16)';
+          roundRect(c, bx, by + 10, bw, 11, 5);
+          c.fill();
+          c.fillStyle = slot.overheat > 0 ? '#ef4444' : (slot.air < 30 ? '#fbbf24' : '#38bdf8');
+          roundRect(c, bx, by + 10, bw * (slot.air / 100), 11, 5);
+          c.fill();
+        });
+
+        // Intro banner
+        if (p1.banner && p1.banner.t > 0) {
+          c.globalAlpha = Math.min(1, p1.banner.t * 1.5);
+          c.fillStyle = 'rgba(15, 23, 42, 0.88)';
+          roundRect(c, W / 2 - 255, 84, 510, 44, 16);
+          c.fill();
+          c.strokeStyle = '#fde047';
+          c.lineWidth = 2.5;
+          c.stroke();
+          c.fillStyle = '#fef08a';
+          c.font = '900 18px sans-serif';
+          c.textAlign = 'center';
+          c.fillText(p1.banner.text, W / 2, 112);
+        }
+        c.restore();
+      }
+
+      // ---- TRANSITION CUTSCENE: CARPET BECOMES THE OCEAN! ----
+      function renderTransition(c) {
+        const prog = Math.min(1, state.trans.t / state.trans.dur);
+        drawBedroomBg(c, state.time);
+
+        // Rising imaginary carpet-waves flooding up to SEA_TOP!
+        const waterY = H - (H - SEA_TOP) * Math.min(1, prog * 1.35);
+        c.save();
+        c.fillStyle = '#0284c7';
+        c.beginPath();
+        c.moveTo(0, H);
+        for (let wx = 0; wx <= W; wx += 30) {
+          c.lineTo(wx, waterY + Math.sin(wx * 0.025 + state.time * 6) * 10);
+        }
+        c.lineTo(W, H);
+        c.closePath();
+        c.fill();
+
+        // Announcement card
+        c.fillStyle = 'rgba(15, 23, 42, 0.90)';
+        roundRect(c, W / 2 - 310, 140, 620, 175, 22);
+        c.fill();
+        c.strokeStyle = '#38bdf8';
+        c.lineWidth = 3.5;
+        c.stroke();
+
+        c.fillStyle = '#7dd3fc';
+        c.font = '900 15px sans-serif';
+        c.textAlign = 'center';
+        c.fillText('🌊 ¡FASE 1 COMPLETADA! · ¡LA ALFOMBRA SE INUNDA!', W / 2, 178);
+
+        c.fillStyle = '#fef08a';
+        c.font = '900 30px sans-serif';
+        c.fillText('⚓ ¡AL BARCO-CAMA! 🧜‍♀️', W / 2, 222);
+
+        c.fillStyle = '#f1f5f9';
+        c.font = '600 16px sans-serif';
+        c.fillText('¡Irene se ha tirado al mar del dormitorio!', W / 2, 258);
+        c.fillText('Papá: rescátala con el gancho · Irene: ¡esquívalo como una sardina!', W / 2, 284);
+        c.restore();
+      }
+
+      // ---- PHASE 2 FULL DRAW ("¡EL BARCO-CAMA Y EL GANCHO!") ----
+      function drawBedBoat(c, boat, hook, t) {
+        const bob = Math.sin(t * 2.6) * 5;
+        const tilt = Math.sin(t * 2.1) * 0.035 + (boat.vx / 2600);
+
+        c.save();
+        c.translate(boat.x, boat.y + bob);
+        c.rotate(tilt);
+        c.strokeStyle = '#291509';
+        c.lineWidth = 2.8;
+
+        // Broomstick mast + knotted bedsheet pirate sail!
+        c.fillStyle = '#92400e';
+        c.fillRect(-5, -108, 10, 114);
+        c.strokeRect(-5, -108, 10, 114);
+
+        // Waving bedsheet sail
+        const billow = Math.sin(t * 4) * 5;
+        c.fillStyle = '#fefce8';
+        c.beginPath();
+        c.moveTo(5, -100);
+        c.quadraticCurveTo(64 + billow, -78, 76 + billow, -24);
+        c.quadraticCurveTo(38, -28, 5, -24);
+        c.closePath();
+        c.fill(); c.stroke();
+
+        // Drawn kids' pirate-star emblem on bedsheet sail
+        c.fillStyle = '#f59e0b';
+        c.font = 'bold 20px sans-serif';
+        c.textAlign = 'center';
+        c.fillText('⭐', 36 + billow * 0.5, -56);
+        c.fillStyle = '#0e7490';
+        c.font = 'bold 9px sans-serif';
+        c.fillText('S.S. CAMA', 37 + billow * 0.5, -36);
+
+        // Papá standing in the boat!
+        drawPapa(c, -22, -24, { scale: 0.94, pirateHat: true, reelSpin: boat.reelSpin });
+
+        // Wooden Bed-Boat Hull (made from the bedframe + fluffy pillow bumper!)
+        c.fillStyle = '#9a4f1c';
+        c.beginPath();
+        c.moveTo(-88, -6);
+        c.lineTo(88, -6);
+        c.lineTo(68, 36);
+        c.lineTo(-68, 36);
+        c.closePath();
+        c.fill(); c.stroke();
+
+        // Striped mattress edge peeking out
+        c.fillStyle = '#e0f2fe';
+        roundRect(c, -74, -14, 148, 14, 6);
+        c.fill(); c.stroke();
+
+        // Fluffy pillow figurehead on the bow
+        c.fillStyle = '#fef9c3';
+        c.beginPath();
+        c.ellipse(78, 4, 15, 11, 0.25, 0, Math.PI * 2);
+        c.fill(); c.stroke();
+
+        // Pulley / winch reel under center of boat
+        c.fillStyle = boat.turboHook > 0 ? '#fde047' : '#cbd5e1';
+        c.beginPath();
+        c.arc(0, 22, 11, 0, Math.PI * 2);
+        c.fill(); c.stroke();
+        c.beginPath();
+        c.moveTo(Math.cos(boat.reelSpin) * -8, 22 + Math.sin(boat.reelSpin) * -8);
+        c.lineTo(Math.cos(boat.reelSpin) * 8, 22 + Math.sin(boat.reelSpin) * 8);
+        c.stroke();
+
+        c.restore();
+      }
+
+      function drawSeaItem(c, it, x, y) {
+        c.save();
+        c.translate(x, y);
+        c.strokeStyle = '#241812';
+        c.lineWidth = 2.4;
+
+        if (it.kind === 'duck') {
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.ellipse(0, 4, 18, 12, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+          c.beginPath(); c.arc(10, -8, 10, 0, Math.PI * 2); c.fill(); c.stroke();
+          c.fillStyle = '#f97316';
+          c.beginPath(); c.ellipse(20, -6, 6, 3.5, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+          c.fillStyle = '#181210';
+          c.beginPath(); c.arc(12, -10, 2, 0, Math.PI * 2); c.fill();
+        } else if (it.kind === 'bear') {
+          c.fillStyle = '#b45309';
+          c.beginPath(); c.arc(0, 0, 16, 0, Math.PI * 2); c.fill(); c.stroke();
+          c.beginPath(); c.arc(-12, -12, 6, 0, Math.PI * 2); c.arc(12, -12, 6, 0, Math.PI * 2); c.fill(); c.stroke();
+          c.fillStyle = '#fde68a';
+          c.beginPath(); c.arc(0, 4, 6.5, 0, Math.PI * 2); c.fill();
+          c.fillStyle = '#181210';
+          c.beginPath(); c.arc(-5, -4, 2, 0, Math.PI * 2); c.arc(5, -4, 2, 0, Math.PI * 2); c.fill();
+        } else if (it.kind === 'bubble') {
+          c.fillStyle = 'rgba(186, 230, 253, 0.55)';
+          c.strokeStyle = '#e0f2fe';
+          c.beginPath(); c.arc(0, 0, 19, 0, Math.PI * 2); c.fill(); c.stroke();
+          c.fillStyle = '#fde047';
+          c.font = 'bold 16px sans-serif';
+          c.textAlign = 'center';
+          c.fillText('⚡', 0, 6);
+        } else if (it.kind === 'sock') {
+          drawBeast(c, 'sock', 0, 0, { scale: 0.55, anim: state.time * 4 });
+        } else if (it.kind === 'slipper') {
+          drawBeast(c, 'slipper', 0, 0, { scale: 0.56, facing: it.vx >= 0 ? 1 : -1, anim: state.time * 4 });
+        }
+        c.restore();
+      }
+
+      function renderPhase2(c) {
+        const p2 = state.p2;
+        const boat = p2.boat;
+        const hook = p2.hook;
+        const ir = p2.irene;
+        const t = state.time;
+
+        // Top sky = still the cozy bedroom walls in imagination!
+        const skyGrad = c.createLinearGradient(0, 0, 0, SEA_TOP + 30);
+        skyGrad.addColorStop(0, '#1e1b4b');
+        skyGrad.addColorStop(1, '#312e81');
+        c.fillStyle = skyGrad;
+        c.fillRect(0, 0, W, SEA_TOP + 30);
+
+        // Subtle bedroom moon & stars up top
+        c.fillStyle = '#fde68a';
+        c.beginPath(); c.arc(92, 68, 22, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#1e1b4b';
+        c.beginPath(); c.arc(101, 63, 18, 0, Math.PI * 2); c.fill();
+
+        // Ocean of the Blue Bedroom Carpet!
+        const seaGrad = c.createLinearGradient(0, SEA_TOP, 0, H);
+        seaGrad.addColorStop(0, '#0ea5e9');
+        seaGrad.addColorStop(0.45, '#0369a1');
+        seaGrad.addColorStop(1, '#1e3a8a');
+        c.fillStyle = seaGrad;
+        c.fillRect(0, SEA_TOP, W, H - SEA_TOP);
+
+        // Subtle sunlit underwater caustics / carpet weave lines
+        c.strokeStyle = 'rgba(186, 230, 253, 0.14)';
+        c.lineWidth = 2;
+        for (let wy = SEA_TOP + 44; wy < H; wy += 48) {
+          c.beginPath();
+          for (let wx = 0; wx <= W; wx += 40) {
+            const y = wy + Math.sin(wx * 0.015 + t * 2 + wy) * 6;
+            if (wx === 0) c.moveTo(wx, y); else c.lineTo(wx, y);
+          }
+          c.stroke();
+        }
+
+        // Back wave layer
+        c.fillStyle = '#38bdf8';
+        c.beginPath();
+        c.moveTo(0, SEA_TOP + 22);
+        for (let wx = 0; wx <= W; wx += 24) {
+          c.lineTo(wx, SEA_TOP - 4 + Math.sin(wx * 0.025 + t * 3.2) * 8);
+        }
+        c.lineTo(W, SEA_TOP + 26);
+        c.closePath();
+        c.fill();
+
+        // Draw floating sea items
+        p2.items.forEach(it => {
+          const iy = it.y + Math.sin(t * 2.5 + it.bob) * 6;
+          drawSeaItem(c, it, it.x, iy);
+        });
+
+        // Draw Aim Line when hook is idle (helpful for Papá!)
+        const anchorX = boat.x;
+        const anchorY = boat.y + 22 + Math.sin(t * 2.6) * 5;
+        if (hook.state === 'idle') {
+          c.save();
+          c.strokeStyle = 'rgba(254, 240, 138, 0.42)';
+          c.lineWidth = 2.5;
+          c.setLineDash([7, 8]);
+          c.beginPath();
+          c.moveTo(hook.x, hook.y);
+          c.lineTo(anchorX + Math.sin(hook.angle) * 280, anchorY + Math.cos(hook.angle) * 280);
+          c.stroke();
+          c.setLineDash([]);
+          c.restore();
+        }
+
+        // Draw Boat-Bed
+        drawBedBoat(c, boat, hook, t);
+
+        // Front sparkling wave crest in front of boat bottom
+        c.fillStyle = 'rgba(14, 165, 233, 0.72)';
+        c.beginPath();
+        c.moveTo(0, SEA_TOP + 34);
+        for (let wx = 0; wx <= W; wx += 24) {
+          c.lineTo(wx, SEA_TOP + 6 + Math.sin(wx * 0.03 - t * 3.8) * 7);
+        }
+        c.lineTo(W, SEA_TOP + 38);
+        c.closePath();
+        c.fill();
+
+        // Draw Rope (colorful striped bedroom scarf-rope!)
+        c.save();
+        c.strokeStyle = '#291509';
+        c.lineWidth = 7;
+        c.beginPath();
+        c.moveTo(anchorX, anchorY);
+        c.lineTo(hook.x, hook.y);
+        c.stroke();
+
+        c.strokeStyle = boat.turboHook > 0 ? '#fde047' : '#fbbf24';
+        c.lineWidth = 4;
+        c.stroke();
+        c.strokeStyle = '#ef4444';
+        c.lineWidth = 4;
+        c.setLineDash([8, 8]);
+        c.stroke();
+        c.setLineDash([]);
+        c.restore();
+
+        // Draw Coat-Hanger / Pirate Hook!
+        c.save();
+        c.translate(hook.x, hook.y);
+        const hookAngle = Math.atan2(hook.x - anchorX, Math.max(1, hook.y - anchorY));
+        c.rotate(-hookAngle);
+        c.strokeStyle = '#1e293b';
+        c.lineWidth = 7;
+        c.lineCap = 'round';
+        c.beginPath();
+        c.moveTo(0, -4);
+        c.lineTo(0, 10);
+        c.arc(-9, 12, 11, 0, Math.PI * 1.15);
+        c.stroke();
+
+        c.strokeStyle = boat.turboHook > 0 ? '#fde047' : '#e2e8f0';
+        c.lineWidth = 3.6;
+        c.stroke();
+        // Cute foam safety tip on hook!
+        c.fillStyle = '#fb7185';
+        c.beginPath();
+        c.arc(-19, 8, 5, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        // Draw snagged item on hook if any
+        if (hook.snaggedItem) {
+          drawSeaItem(c, hook.snaggedItem, hook.x, hook.y + 18);
+        }
+
+        // Draw IRENE swimming in the Carpet-Ocean!
+        c.save();
+        if (ir.dashTimer > 0) {
+          // Glowing bubble shield aura during Turbo-Burbuja!
+          c.fillStyle = 'rgba(244, 114, 182, 0.28)';
+          c.strokeStyle = '#f9a8d4';
+          c.lineWidth = 3;
+          c.beginPath();
+          c.arc(ir.x, ir.y, 38, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+        }
+        // Little rubber duck floatie ring behind Irene!
+        c.fillStyle = '#fde047';
+        c.strokeStyle = '#b45309';
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.ellipse(ir.x, ir.y + 20, 32, 12, 0, 0, Math.PI * 2);
+        c.fill(); c.stroke();
+
+        drawIrene(c, ir.x + (ir.caught ? Math.sin(ir.wiggle) * 4 : 0), ir.y, {
+          scale: 0.94,
+          facing: ir.facing,
+          mood: ir.caught ? 'caught' : 'swim',
+          swimT: t,
+          goggles: true
+        });
+        c.restore();
+
+        // ---- PHASE 2 HUD ----
+        c.save();
+        // Left pill: Papá info / turbo status
+        c.fillStyle = 'rgba(15, 23, 42, 0.80)';
+        roundRect(c, 16, 12, 224, 44, 13);
+        c.fill();
+        c.strokeStyle = 'rgba(125, 211, 252, 0.35)';
+        c.lineWidth = 1.5;
+        c.stroke();
+        c.fillStyle = '#7dd3fc';
+        c.font = '800 13px sans-serif';
+        c.textAlign = 'left';
+        c.fillText(boat.turboHook > 0 ? '⚡ ¡GANCHO TURBO ACTIVO!' : '⚓ CAPITÁN PAPÁ: ¡AL GANCHO!', 28, 39);
+
+        // Center pill: Countdown clock
+        c.fillStyle = p2.timeLeft < 7 ? 'rgba(159, 18, 57, 0.88)' : 'rgba(15, 23, 42, 0.84)';
+        roundRect(c, W / 2 - 96, 10, 192, 48, 15);
+        c.fill();
+        c.strokeStyle = p2.timeLeft < 7 ? '#fda4af' : '#fde047';
+        c.lineWidth = 2;
+        c.stroke();
+        c.fillStyle = '#fef08a';
+        c.font = '900 24px sans-serif';
+        c.textAlign = 'center';
+        c.fillText(`⏱️ ${Math.ceil(p2.timeLeft)}s`, W / 2, 42);
+
+        // Right pill: Irene Turbo-Burbuja readiness
+        c.fillStyle = 'rgba(15, 23, 42, 0.80)';
+        roundRect(c, W - 246, 12, 230, 44, 13);
+        c.fill();
+        c.strokeStyle = 'rgba(244, 114, 182, 0.4)';
+        c.lineWidth = 1.5;
+        c.stroke();
+        c.fillStyle = ir.dashCooldown <= 0 ? '#f9a8d4' : '#cbd5e1';
+        c.font = '800 13px sans-serif';
+        c.textAlign = 'center';
+        const dashTxt = ir.dashCooldown <= 0
+          ? '🫧 TURBO IRENE: ¡LISTO!'
+          : `🫧 Recargando (${ir.dashCooldown.toFixed(1)}s)`;
+        c.fillText(dashTxt, W - 131, 39);
+
+        if (p2.banner && p2.banner.t > 0) {
+          c.globalAlpha = Math.min(1, p2.banner.t * 1.4);
+          c.fillStyle = 'rgba(15, 23, 42, 0.88)';
+          roundRect(c, W / 2 - 260, 74, 520, 40, 14);
+          c.fill();
+          c.strokeStyle = '#38bdf8';
+          c.lineWidth = 2;
+          c.stroke();
+          c.fillStyle = '#e0f2fe';
+          c.font = '900 16px sans-serif';
+          c.textAlign = 'center';
+          c.fillText(p2.banner.text, W / 2, 100);
+        }
+        c.restore();
+      }
+
+      // ---- MENU ANIMATED SCENE ----
+      function renderMenuBg(c) {
+        drawBedroomBg(c, state.time);
+        // Cute animated bedroom beasts peeking around the bed
+        const bob = Math.sin(state.time * 3) * 8;
+        drawBeast(c, 'slipper', 165, 455 + bob * 0.4, { scale: 1.05, facing: 1, anim: state.time * 4 });
+        drawBeast(c, 'clothespin', 790, 210 + bob, { scale: 1.0, facing: -1, anim: state.time * 5 });
+        drawBeast(c, 'pillow', 485, 118 + bob * 0.7, { scale: 0.92, anim: state.time * 3 });
+        drawBeast(c, 'scissors', 805, 455, { scale: 1.0, facing: -1, anim: state.time * 4.5 });
+      }
+
+      // ---- PARTICLES, POP TEXTS & COMIC SPEECH BUBBLES ----
+      function updateAndDrawFX(c, dt) {
+        // Particles
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+          const p = state.particles[i];
+          p.life -= dt;
+          if (p.life <= 0) { state.particles.splice(i, 1); continue; }
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          if (p.style === 'bubble') {
+            p.vy -= 55 * dt;
+          } else if (p.style === 'feather') {
+            p.vy += 65 * dt;
+            p.vx += Math.sin(state.time * 8 + i) * 35 * dt;
+          } else {
+            p.vy += 320 * dt;
+          }
+          p.rot += p.vrot * dt;
+
+          c.save();
+          c.globalAlpha = Math.max(0, Math.min(1, p.life / (p.maxLife * 0.6)));
+          c.translate(p.x, p.y);
+          c.rotate(p.rot);
+          c.fillStyle = p.color;
+          if (p.style === 'bubble') {
+            c.strokeStyle = '#ffffff';
+            c.lineWidth = 1.8;
+            c.beginPath(); c.arc(0, 0, p.size, 0, Math.PI * 2); c.stroke();
+          } else if (p.style === 'feather') {
+            c.beginPath(); c.ellipse(0, 0, p.size * 1.3, p.size * 0.45, 0, 0, Math.PI * 2); c.fill();
+          } else if (p.style === 'confetti') {
+            c.fillRect(-p.size, -p.size * 0.5, p.size * 2, p.size);
+          } else {
+            c.beginPath(); c.arc(0, 0, p.size, 0, Math.PI * 2); c.fill();
+          }
+          c.restore();
+        }
+
+        // Speech bubbles
+        for (let i = state.bubbles.length - 1; i >= 0; i--) {
+          const b = state.bubbles[i];
+          b.life -= dt;
+          if (b.life <= 0) { state.bubbles.splice(i, 1); continue; }
+          c.save();
+          c.globalAlpha = Math.min(1, b.life * 2.5);
+          c.font = '800 13.5px sans-serif';
+          const tw = c.measureText(b.text).width;
+          const bw = Math.max(90, tw + 24);
+          const bh = 30;
+          const bx = Math.max(12, Math.min(W - bw - 12, b.x - bw / 2));
+          const by = Math.max(64, Math.min(H - bh - 12, b.y - bh / 2));
+
+          c.fillStyle = b.tint;
+          c.strokeStyle = '#241812';
+          c.lineWidth = 2.2;
+          roundRect(c, bx, by, bw, bh, 12);
+          c.fill(); c.stroke();
+
+          // Little bubble pointer tail
+          c.beginPath();
+          c.moveTo(bx + bw * 0.5 - 6, by + bh);
+          c.lineTo(bx + bw * 0.5, by + bh + 8);
+          c.lineTo(bx + bw * 0.5 + 6, by + bh);
+          c.closePath();
+          c.fill(); c.stroke();
+
+          c.fillStyle = '#1e1b2e';
+          c.textAlign = 'center';
+          c.fillText(b.text, bx + bw * 0.5, by + 20);
+          c.restore();
+        }
+
+        // Comic pop words
+        for (let i = state.popTexts.length - 1; i >= 0; i--) {
+          const p = state.popTexts[i];
+          p.life -= dt;
+          if (p.life <= 0) { state.popTexts.splice(i, 1); continue; }
+          p.y += p.vy * dt;
+          p.vy *= 0.94;
+          c.save();
+          c.globalAlpha = Math.min(1, p.life * 2);
+          c.font = `900 ${p.size}px sans-serif`;
+          c.textAlign = 'center';
+          c.lineWidth = 5;
+          c.strokeStyle = '#1e1b2e';
+          c.strokeText(p.text, p.x, p.y);
+          c.fillStyle = p.color;
+          c.fillText(p.text, p.x, p.y);
+          c.restore();
+        }
+      }
+
+      // ============================================================
+      // 8. UI STATE SYNCHRONIZATION & OVERLAYS
+      // ============================================================
+      function updateUIScreen() {
+        const scr = state.screen;
+        menuOverlay.classList.toggle('hidden', scr !== 'menu');
+        resultOverlay.classList.toggle('hidden', scr !== 'result');
+        btnMenu.classList.toggle('hidden', scr === 'menu');
+
+        controlsMenu.classList.toggle('hidden', scr !== 'menu' && scr !== 'transition' && scr !== 'result');
+        controlsP1.classList.toggle('hidden', scr !== 'phase1');
+        controlsP2.classList.toggle('hidden', scr !== 'phase2');
+
+        if (scr === 'phase1' && state.p1) {
+          controlsP1Shared.classList.toggle('hidden', state.p1.isSplit);
+          controlsP1Split.classList.toggle('hidden', !state.p1.isSplit);
+          statusSubtitle.textContent = state.p1.isSplit
+            ? 'Fase 1 (2 Jugadores): ¡Cada uno protege su lado con la manta!'
+            : 'Fase 1: ¡Bajo la manta antes de que ataquen las bestias!';
+        } else if (scr === 'phase2') {
+          const dadAI = state.mode === '1p-irene';
+          const ireneAI = state.mode === '1p-papa';
+          p2DadControls.classList.toggle('is-ai', dadAI);
+          p2IreneControls.classList.toggle('is-ai', ireneAI);
+          statusSubtitle.textContent = 'Fase 2: ¡El Barco-Cama de Papá contra la Sirena Irene!';
+        } else if (scr === 'transition') {
+          statusSubtitle.textContent = '¡El suelo del cuarto se convierte en el Mar de la Alfombra!';
+        } else {
+          statusSubtitle.textContent = 'Bestias del dormitorio y el Barco-Cama rescatador';
+        }
+      }
+
+      function showMenu() {
+        state.screen = 'menu';
+        activePointers.clear();
+        updateUIScreen();
+      }
+
+      function showResult({ emoji, title, msg, statsHtml, actions }) {
+        state.screen = 'result';
+        activePointers.clear();
+        resultEmoji.textContent = emoji;
+        resultTitle.textContent = title;
+        resultMsg.textContent = msg;
+        resultStats.innerHTML = statsHtml;
+        resultActions.innerHTML = '';
+        actions.forEach(a => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = a.label;
+          btn.className = a.primary ? 'game-btn btn-result-primary' : 'game-btn btn-result-secondary';
+          btn.addEventListener('click', () => { AudioFX.unlock(); a.fn(); });
+          resultActions.appendChild(btn);
+        });
+        updateUIScreen();
+      }
+
+      function startPhase2Direct() {
+        state.flow = 'p2only';
+        initPhase2();
+      }
+
+      // ============================================================
+      // 9. BESTIARY MODAL BUILDER
+      // ============================================================
+      function openBestiary() {
+        bestiaryGrid.innerHTML = '';
+        BEASTS.forEach(b => {
+          const count = stats.bounced[b.id] || 0;
+          const card = document.createElement('div');
+          card.className = 'bestiary-card';
+          card.innerHTML = `
+            <canvas class="bestiary-canvas" width="184" height="152"></canvas>
+            <div class="bestiary-info">
+              <div class="bestiary-head">
+                <span class="bestiary-name">${b.name}</span>
+                <span class="bestiary-verb">${b.verb}</span>
+              </div>
+              <div class="bestiary-latin">${b.latin}</div>
+              <div class="bestiary-real"><strong>En realidad es:</strong> ${b.realObj}</div>
+              <div class="bestiary-quote">💬 "${b.enterLines[0]}" · 🛡️ Rebotada: <strong>${count}</strong></div>
+            </div>
+          `;
+          bestiaryGrid.appendChild(card);
+
+          const mini = card.querySelector('canvas');
+          const mctx = mini.getContext('2d');
+          mctx.scale(2, 2);
+          drawBeast(mctx, b.id, 46, 42, { scale: 0.72, facing: 1, anim: 0.9 });
+        });
+        bestiaryModal.classList.remove('hidden');
+      }
+
+      // ============================================================
+      // 10. EVENT WIRING (KEYBOARD, TOUCH, MOUSE, BUTTONS)
+      // ============================================================
+      window.addEventListener('keydown', (e) => {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+          if (state.screen === 'phase1' || state.screen === 'phase2' || state.screen === 'transition') {
+            e.preventDefault();
+          }
+        }
+        AudioFX.unlock();
+        if (state.screen === 'transition' && state.trans.t > 0.6 && (e.code === 'Space' || e.code === 'Enter')) {
+          initPhase2();
+          return;
+        }
+        keys[e.code] = true;
+      });
+
+      window.addEventListener('keyup', (e) => {
+        keys[e.code] = false;
+      });
+
+      // Helper for holdable touch/mouse control buttons
+      function bindHoldBtn(elId, keyName, onDown) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const down = (e) => {
+          e.preventDefault();
+          AudioFX.unlock();
+          if (keyName) btnHeld[keyName] = true;
+          el.classList.add('pressed');
+          if (onDown) onDown();
+        };
+        const up = (e) => {
+          e.preventDefault();
+          if (keyName) btnHeld[keyName] = false;
+          el.classList.remove('pressed');
+        };
+        el.addEventListener('pointerdown', down);
+        el.addEventListener('pointerup', up);
+        el.addEventListener('pointercancel', up);
+        el.addEventListener('pointerleave', up);
+      }
+
+      bindHoldBtn('btnBlanketShared', 'blanketShared');
+      bindHoldBtn('btnBlanketPapa', 'blanketPapa');
+      bindHoldBtn('btnBlanketIrene', 'blanketIrene');
+      bindHoldBtn('btnBoatLeft', 'boatLeft');
+      bindHoldBtn('btnBoatRight', 'boatRight');
+      bindHoldBtn('btnBoatHook', null, launchHook);
+      bindHoldBtn('btnSwimLeft', 'swimLeft');
+      bindHoldBtn('btnSwimRight', 'swimRight');
+      bindHoldBtn('btnSwimUp', 'swimUp');
+      bindHoldBtn('btnSwimDown', 'swimDown');
+      bindHoldBtn('btnIreneDash', null, triggerIreneDash);
+
+      // Direct Canvas Pointer / Multitouch Interactions!
+      canvas.addEventListener('pointerdown', (e) => {
+        AudioFX.unlock();
+        const pt = canvasCoords(e.clientX, e.clientY);
+
+        if (state.screen === 'transition' && state.trans.t > 0.6) {
+          initPhase2();
+          return;
+        }
+
+        if (state.screen === 'phase1' && state.p1) {
+          // Clicking a star collects it; otherwise ducks under blanket!
+          if (collectStarAt(pt.x, pt.y)) return;
+          const role = state.p1.isSplit ? (pt.x < W / 2 ? 'papa' : 'irene') : 'shared';
+          activePointers.set(e.pointerId, { role, x: pt.x, y: pt.y });
+          try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        } else if (state.screen === 'phase2' && state.p2) {
+          let role = null;
+          if (state.mode === '1p-papa') {
+            role = 'papa';
+            if (pt.y > SEA_TOP - 25) launchHook();
+          } else if (state.mode === '1p-irene') {
+            role = 'irene';
+          } else {
+            // 2P multitouch: top band = Papá's Boat, water = Irene!
+            role = pt.y < SEA_TOP ? 'papa' : 'irene';
+          }
+          activePointers.set(e.pointerId, { role, x: pt.x, y: pt.y, startX: pt.x, startY: pt.y, startT: performance.now() });
+          try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        }
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        const entry = activePointers.get(e.pointerId);
+        if (!entry) return;
+        const pt = canvasCoords(e.clientX, e.clientY);
+        entry.x = pt.x;
+        entry.y = pt.y;
+      });
+
+      function endCanvasPointer(e) {
+        const entry = activePointers.get(e.pointerId);
+        if (entry && state.screen === 'phase2' && entry.role === 'papa') {
+          const moved = Math.hypot(entry.x - entry.startX, entry.y - entry.startY);
+          const elapsed = performance.now() - entry.startT;
+          // Quick tap in boat zone launches hook!
+          if (moved < 24 && elapsed < 320) launchHook();
+        }
+        activePointers.delete(e.pointerId);
+      }
+      canvas.addEventListener('pointerup', endCanvasPointer);
+      canvas.addEventListener('pointercancel', endCanvasPointer);
+
+      // Menu selectors
+      const modeHints = {
+        '2p': '¡Los dos juntos en el mismo teclado o tablet!',
+        '1p-irene': 'Irene esquiva las bestias y el gancho de Papá IA',
+        '1p-papa': 'Papá defiende la cama y pesca a Irene IA'
+      };
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          AudioFX.unlock();
+          state.mode = btn.dataset.mode;
+          document.getElementById('modeHint').textContent = modeHints[state.mode];
+          document.querySelectorAll('.mode-btn').forEach(b => {
+            const active = b.dataset.mode === state.mode;
+            b.classList.toggle('is-active', active);
+          });
+        });
+      });
+
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          AudioFX.unlock();
+          state.diff = btn.dataset.diff;
+          document.querySelectorAll('.diff-btn').forEach(b => {
+            const active = b.dataset.diff === state.diff;
+            b.classList.toggle('is-active', active);
+          });
+        });
+      });
+
+      document.getElementById('btnStartFull').addEventListener('click', () => {
+        AudioFX.unlock();
+        state.flow = 'full';
+        state.night = 1;
+        state.score = 0;
+        initPhase1();
+      });
+      document.getElementById('btnStartP1').addEventListener('click', () => {
+        AudioFX.unlock();
+        state.flow = 'p1only';
+        state.night = 1;
+        state.score = 0;
+        initPhase1();
+      });
+      document.getElementById('btnStartP2').addEventListener('click', () => {
+        AudioFX.unlock();
+        state.flow = 'p2only';
+        state.score = 0;
+        initPhase2();
+      });
+      document.getElementById('btnSkipToP2').addEventListener('click', () => {
+        AudioFX.unlock();
+        initPhase2();
+      });
+      document.getElementById('btnSkipToP2Split').addEventListener('click', () => {
+        AudioFX.unlock();
+        initPhase2();
+      });
+
+      btnMenu.addEventListener('click', () => { AudioFX.unlock(); showMenu(); });
+      btnSound.addEventListener('click', () => {
+        const muted = AudioFX.toggle();
+        btnSound.textContent = muted ? '🔇 Silencio' : '🔊 Sonido';
+      });
+      btnBestiary.addEventListener('click', () => { AudioFX.unlock(); openBestiary(); });
+      document.getElementById('btnCloseBestiary').addEventListener('click', () => {
+        bestiaryModal.classList.add('hidden');
+      });
+      bestiaryModal.addEventListener('click', (e) => {
+        if (e.target === bestiaryModal) bestiaryModal.classList.add('hidden');
+      });
+
+      // ============================================================
+      
+      // Fullscreen & Wake Lock support for Pixel Tablet / mobile
+      const btnFullscreen = document.getElementById('btnFullscreen');
+      let wakeLock = null;
+      async function requestWakeLock() {
+        try {
+          if ('wakeLock' in navigator && !wakeLock) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+          }
+        } catch (_) {}
+      }
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && (state.screen === 'phase1' || state.screen === 'phase2')) {
+          requestWakeLock();
+        }
+      });
+      if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', async () => {
+          AudioFX.unlock();
+          requestWakeLock();
+          try {
+            if (!document.fullscreenElement) {
+              await document.documentElement.requestFullscreen();
+            } else {
+              await document.exitFullscreen();
+            }
+          } catch (_) {}
+        });
+        document.addEventListener('fullscreenchange', () => {
+          btnFullscreen.textContent = document.fullscreenElement ? '⛶ Salir' : '⛶ Pantalla';
+        });
+      }
+
+      // 11. MAIN GAME LOOP
+      // ============================================================
+      let lastTime = performance.now();
+
+      function tick(now) {
+        const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
+        lastTime = now;
+        state.time += dt;
+
+        if (state.shake > 0) state.shake = Math.max(0, state.shake - dt * 32);
+
+        // Update current screen
+        if (state.screen === 'phase1' && state.p1) {
+          updatePhase1(dt);
+        } else if (state.screen === 'transition') {
+          state.trans.t += dt;
+          if (state.trans.t >= state.trans.dur) {
+            initPhase2();
+          }
+        } else if (state.screen === 'phase2' && state.p2) {
+          updatePhase2(dt);
+        }
+
+        // Render
+        ctx.save();
+        if (state.shake > 0.2) {
+          ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
+        }
+
+        if (state.screen === 'menu') {
+          renderMenuBg(ctx);
+        } else if (state.screen === 'phase1' && state.p1) {
+          renderPhase1(ctx);
+        } else if (state.screen === 'transition') {
+          renderTransition(ctx);
+        } else if (state.screen === 'phase2' && state.p2) {
+          renderPhase2(ctx);
+        } else if (state.screen === 'result') {
+          if (state.p2) renderPhase2(ctx);
+          else if (state.p1) renderPhase1(ctx);
+          else renderMenuBg(ctx);
+        }
+
+        updateAndDrawFX(ctx, dt);
+        ctx.restore();
+
+        requestAnimationFrame(tick);
+      }
+
+      updateUIScreen();
+      requestAnimationFrame(tick);
+    })();
+  
+  </script>
+</body>
+</html>
